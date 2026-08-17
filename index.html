@@ -110,7 +110,7 @@ input[type=range]::-moz-range-thumb{width:8px;height:16px;border:0;border-radius
 .hint{position:absolute;left:24px;bottom:8px;font-size:10px;letter-spacing:.14em;color:var(--ivory-dim);text-transform:uppercase}
 .result{position:absolute;left:50%;top:21%;transform:translate(-50%,-50%) scale(.9);opacity:0;pointer-events:none;text-align:center;letter-spacing:.24em;text-transform:uppercase;transition:opacity .35s,transform .35s;background:rgba(5,4,3,.55);padding:10px 22px;border-radius:4px}
 .result.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-#chamber.is-observed .timeaxis,#chamber.is-observed .crosshair{opacity:0}
+#chamber.is-observed .timeaxis,#chamber.is-observed .crosshair,#chamber.is-observed .state-tag{opacity:0}
 .result b{display:block;font-size:44px;color:var(--amber-hi);text-shadow:0 0 30px rgba(255,157,24,.6);font-weight:500}
 .result small{display:block;margin-top:8px;font-size:11px;color:var(--ivory-dim);letter-spacing:.14em}
 .result .k{display:block;margin-top:14px;font-size:12px;color:var(--amber-2);letter-spacing:.06em;text-transform:none;font-style:italic}
@@ -344,6 +344,8 @@ input[type=range]::-moz-range-thumb{width:8px;height:16px;border:0;border-radius
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
+import { GLTFLoader } from './vendor/GLTFLoader.js';
+import { MeshSurfaceSampler } from './vendor/MeshSurfaceSampler.js';
 
 /* ======================================================================
    0. State
@@ -527,7 +529,7 @@ function buildChamber(){
 
 const CAT_VS=`
 attribute float aSize; attribute float aCopy; attribute float aRand; attribute vec3 aColor;
-uniform float uTime,uSep,uPhase,uComp,uKappa,uCollapse,uSqueeze,uPix,uKeep;
+uniform float uTime,uSep,uPhase,uComp,uKappa,uCollapse,uSqueeze,uPix,uKeep,uFloor,uScanY;
 varying float vA; varying vec3 vC;
 void main(){
   float k=aCopy, N=uComp;
@@ -538,7 +540,7 @@ void main(){
   float dist=rank;
   float off=rank*side*(0.25+uSep*0.20);
   vec3 p=position;
-  p.x*=exp(-0.10*uSqueeze); p.y*=exp(0.10*uSqueeze);
+  p.x*=exp(-0.10*uSqueeze); p.y=(p.y-uFloor)*exp(0.10*uSqueeze)+uFloor;
   float ph=uPhase*2.0 + k*1.0472;
   float shim=0.014*(1.0+uKappa*6.0);
   p+=shim*vec3(sin(uTime*1.7+aRand*40.0+ph), cos(uTime*1.3+aRand*30.0+ph), sin(uTime*2.1+aRand*20.0));
@@ -557,15 +559,16 @@ void main(){
   float keep=1.0-step(0.5,abs(k-uKeep));
   float a=mix(base, keep, uCollapse);
   a*= (1.0-uKappa*0.35);
-  vA=show*a;
+  float scan=exp(-pow((world.y-uScanY)*2.5,2.0));
+  vA=show*a*(1.0+0.9*scan);
   vC=aColor;
-  gl_PointSize=aSize*uPix*(13.0/max(0.5,-mv.z))*(1.0+0.3*uCollapse*keep);
+  gl_PointSize=aSize*uPix*(13.0/max(0.5,-mv.z))*(1.0+0.3*uCollapse*keep+0.4*scan);
 }`;
 const CAT_FS=`
 precision highp float; varying float vA; varying vec3 vC;
 void main(){ vec2 q=gl_PointCoord-0.5; float d=length(q); if(d>0.5) discard; float a=smoothstep(0.5,0.05,d); vec3 col=vC*(0.55+0.9*a); gl_FragColor=vec4(col, a*vA); }`;
 
-async function buildCat(){
+async function buildCatPNG(){
   const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src='assets/quantum-cat.png'; });
   const SZ=isMobile?160:220; const c=document.createElement('canvas'); c.width=c.height=SZ; const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(img,0,0,SZ,SZ); const d=x.getImageData(0,0,SZ,SZ).data;
   const target=isMobile?4200:9800; const cand=[];
@@ -598,9 +601,91 @@ async function buildCat(){
   geo.setAttribute('aRand',new THREE.BufferAttribute(rnd,1));
   geo.setAttribute('aColor',new THREE.BufferAttribute(col,3));
   catMat=new THREE.ShaderMaterial({vertexShader:CAT_VS,fragmentShader:CAT_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
-    uniforms:{uTime:{value:0},uSep:{value:S.sep},uPhase:{value:S.ph},uComp:{value:S.N},uKappa:{value:S.ka},uCollapse:{value:0},uSqueeze:{value:S.sq},uPix:{value:1},uKeep:{value:2}}});
+    uniforms:{uTime:{value:0},uSep:{value:S.sep},uPhase:{value:S.ph},uComp:{value:S.N},uKappa:{value:S.ka},uCollapse:{value:0},uSqueeze:{value:S.sq},uPix:{value:1},uKeep:{value:2},uFloor:{value:-2.6},uScanY:{value:0}}});
   cat=new THREE.Points(geo,catMat); cat.frustumCulled=false; scene.add(cat);
 }
+/* ---------- GLB hologram cat (primary path). The PNG point cloud above is the fallback. ---------- */
+const CAT_CFG={ scale:4.6, rotY:Math.PI/4-0.32, floorY:-2.6, x:0.0, z:0.1 };   // one place for all corrective transforms
+const HOLO_VS=`
+attribute vec3 aBary; varying vec3 vB; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying vec2 vUv;
+void main(){ vB=aBary; vUv=uv; vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*normal); vV=normalize(cameraPosition-w.xyz); gl_Position=projectionMatrix*viewMatrix*w; }`;
+const HOLO_FS=`
+precision highp float; uniform sampler2D map; uniform float uAlpha,uScanY,uKappa,uTime,uHasMap; uniform vec3 uCol;
+varying vec3 vB; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying vec2 vUv;
+void main(){
+  vec3 d=fwidth(vB); vec3 a3=smoothstep(vec3(0.0), d*1.5, vB); float edge=1.0-min(min(a3.x,a3.y),a3.z);
+  float fres=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.4);
+  float tex=uHasMap>0.5 ? dot(texture2D(map,vUv).rgb,vec3(0.333)) : 0.5;
+  float scan=exp(-pow((vW.y-uScanY)*3.0,2.0));
+  float noise=0.86+0.14*sin(vW.y*38.0+uTime*3.0+vW.x*17.0);
+  float lum=edge*0.72*noise + fres*0.55 + tex*0.16 + scan*0.6*(edge+fres+0.15);
+  if(!gl_FrontFacing) lum*=0.35;
+  lum*=1.0-uKappa*0.3;
+  vec3 col=uCol*lum + vec3(1.0,0.86,0.58)*scan*0.22;
+  gl_FragColor=vec4(col, clamp(lum,0.0,1.0)*uAlpha);
+}`;
+let holoMats=[], catGroup=null, ghostGroups=[], catParts={};
+function holoMaterial(map){ return new THREE.ShaderMaterial({vertexShader:HOLO_VS,fragmentShader:HOLO_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+  uniforms:{map:{value:map||null},uHasMap:{value:map?1:0},uAlpha:{value:1},uScanY:{value:0},uKappa:{value:0},uTime:{value:0},uCol:{value:new THREE.Color('#ffb547')}}}); }
+function withBary(geo){ const g=geo.index?geo.toNonIndexed():geo; const n=g.attributes.position.count; const b=new Float32Array(n*3); for(let i=0;i<n;i+=3){ b[i*3]=1; b[i*3+4]=1; b[i*3+8]=1; } g.setAttribute('aBary',new THREE.BufferAttribute(b,3)); return g; }
+async function buildCatGLB(){
+  const gltf=await new Promise((res,rej)=>new GLTFLoader().load('models/schrodinger-cat.glb',res,undefined,rej));
+  const root=gltf.scene;
+  // semantic map from inspection (Tripo names are opaque): traversal order of meshes with >100 tris
+  const meshes=[]; root.traverse(o=>{ if(o.isMesh) meshes.push(o); });
+  const big=meshes.filter(m=>(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3>100);
+  const ROLE=['head','torso','hindL','hindR','frontL','frontR','tail','whiskerA','whiskerB'];
+  big.forEach((m,i)=>{ m.userData.role=ROLE[i]||('part'+i); catParts[m.userData.role]=m; });
+  meshes.forEach(m=>{ if(!big.includes(m)) m.visible=false; });          // 31 fragments <= 20 tris: hidden
+  // replace materials with the hologram shader, keep the baked texture for stripe modulation
+  big.forEach(m=>{ const map=(m.material&&m.material.map)||null; if(map){ map.colorSpace=THREE.SRGBColorSpace; } m.geometry=withBary(m.geometry); m.material=holoMaterial(map); m.material.userData.ghost=false; holoMats.push(m.material); m.frustumCulled=false; });
+  // hierarchy: catGroup (placement) > body (breathing) > [ headPivot(head, whiskers), tailPivot(tail), rest ]
+  catGroup=new THREE.Group(); const body=new THREE.Group(); body.name='body'; catGroup.add(body);
+  const headPivot=new THREE.Group(), tailPivot=new THREE.Group();
+  const hp=new THREE.Vector3(-0.27,0.46,0.12), tp=new THREE.Vector3(0.02,0.50,-0.34);      // neck / tail-base pivots in model space (from bbox inspection)
+  headPivot.position.copy(hp); tailPivot.position.copy(tp);
+  const attach=(piv,m)=>{ m.position.sub(piv.position); piv.add(m); };
+  big.forEach(m=>{ const r=m.userData.role; if(r==='head'||r==='whiskerA'||r==='whiskerB') attach(headPivot,m); else if(r==='tail') attach(tailPivot,m); else body.add(m); });
+  body.add(headPivot,tailPivot);
+  catGroup.position.set(CAT_CFG.x,CAT_CFG.floorY,CAT_CFG.z); catGroup.rotation.y=CAT_CFG.rotY; catGroup.scale.setScalar(CAT_CFG.scale);
+  catGroup.userData={headPivot,tailPivot,body};
+  scene.add(catGroup); catGroup.updateMatrixWorld(true);
+  // ghosts: two temporal echoes (rank 1, either side); deeper ranks are carried by particles only
+  for(const side of [-1,1]){ const g=catGroup.clone(true); g.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.userData.ghost=true; o.material.uniforms.uAlpha.value=0.3; holoMats.push(o.material); } }); g.userData.side=side; scene.add(g); ghostGroups.push(g); }
+  // particle surface: sample the real mesh surface once; head gets a density boost so the face reads
+  const total=isMobile?3600:7500, COPIES=6;
+  const budget={head:0.30,torso:0.30,hindL:0.07,hindR:0.07,frontL:0.07,frontR:0.07,tail:0.10,whiskerA:0.01,whiskerB:0.01};
+  const pts=[]; const tmp=new THREE.Vector3(), nrm=new THREE.Vector3();
+  big.forEach(m=>{ const n=Math.round(total*(budget[m.userData.role]||0.02)); if(!n) return; const smp=new MeshSurfaceSampler(m).build(); for(let i=0;i<n;i++){ smp.sample(tmp,nrm); tmp.applyMatrix4(m.matrixWorld); const isHead=m.userData.role==='head'; pts.push([tmp.x,tmp.y,tmp.z, isHead?0.85:0.6]); } });
+  const n=pts.length*COPIES; const pos=new Float32Array(n*3), size=new Float32Array(n), copy=new Float32Array(n), rnd=new Float32Array(n), col=new Float32Array(n*3);
+  let o=0; for(let k=0;k<COPIES;k++) for(let i=0;i<pts.length;i++,o++){ const [x,y,z,lum]=pts[i]; pos[o*3]=x; pos[o*3+1]=y; pos[o*3+2]=z; size[o]=(0.5+lum*1.4)*(Math.random()<.05?2.0:1); copy[o]=k; rnd[o]=Math.random(); const b=.55+lum*.7; col[o*3]=Math.min(1,1.0*b); col[o*3+1]=Math.min(1,.66*b); col[o*3+2]=Math.min(1,.18*b); }
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('aSize',new THREE.BufferAttribute(size,1)); geo.setAttribute('aCopy',new THREE.BufferAttribute(copy,1)); geo.setAttribute('aRand',new THREE.BufferAttribute(rnd,1)); geo.setAttribute('aColor',new THREE.BufferAttribute(col,3));
+  catMat=new THREE.ShaderMaterial({vertexShader:CAT_VS,fragmentShader:CAT_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    uniforms:{uTime:{value:0},uSep:{value:S.sep},uPhase:{value:S.ph},uComp:{value:S.N},uKappa:{value:S.ka},uCollapse:{value:0},uSqueeze:{value:S.sq},uPix:{value:1},uKeep:{value:2},uFloor:{value:CAT_CFG.floorY},uScanY:{value:0}}});
+  cat=new THREE.Points(geo,catMat); cat.frustumCulled=false; scene.add(cat);
+  resize();
+  console.info('[cat] GLB hierarchy:', meshes.length,'meshes;', big.length,'used:', big.map(m=>m.userData.role+'('+(m.geometry.attributes.position.count/3|0)+' tris)').join(', '), '· particles', pts.length, 'x 6 copies');
+}
+function updateCatMotion(T){
+  if(!catGroup) return;
+  const {headPivot,tailPivot,body}=catGroup.userData; const still=reduced||!S.running;
+  const t=still?0:T;
+  body.scale.y=1+0.005*Math.sin(t*1.25);                       // breathing +/-0.5%
+  body.position.x=0.004*Math.sin(t*0.37);                      // weight shift
+  headPivot.rotation.y=0.035*Math.sin(t*0.45)+0.012*Math.sin(t*1.7);   // yaw +/-2 deg
+  headPivot.rotation.x=0.02*Math.sin(t*0.61);                  // pitch +/-1.2 deg
+  tailPivot.rotation.y=0.05*Math.sin(t*0.9)+0.02*Math.sin(t*2.3);      // sway +/-3 deg
+  // squeeze as anisotropic scale about the feet; ghosts follow separation
+  const sx=Math.exp(-0.10*S.sq), sy=Math.exp(0.10*S.sq);
+  catGroup.scale.set(CAT_CFG.scale*sx,CAT_CFG.scale*sy,CAT_CFG.scale);
+  const off=0.25+S.sep*0.20, breathe=0.08*Math.sin(T*0.6+1.3);
+  ghostGroups.forEach(g=>{ const sd=g.userData.side; g.scale.copy(catGroup.scale); g.position.set(CAT_CFG.x+sd*(off+breathe)*(1-S.collapse),CAT_CFG.floorY,CAT_CFG.z-0.75*(1-S.collapse)); g.rotation.y=CAT_CFG.rotY; g.visible=S.N>1; });
+  const ghostA=0.32*(1-S.ka*0.35)*(1-S.collapse), primA=1.25+0.3*S.collapse;
+  const scanY=scanPlane?scanPlane.position.y:0;
+  for(const m of holoMats){ const u=m.uniforms; u.uTime.value=T; u.uScanY.value=scanY; u.uKappa.value=S.ka; u.uAlpha.value=m.userData.ghost?ghostA:primA; }
+  if(catMat) catMat.uniforms.uScanY.value=scanY;
+}
+
 const MOTE_VS=`
 attribute float aRad,aPh,aLift,aSpd,aSz; uniform float uTime,uPix,uKappa; varying float vA;
 void main(){ float a=aPh+uTime*aSpd; vec3 p=vec3(cos(a)*aRad, aLift+sin(uTime*0.7+aPh*3.0)*0.12, sin(a)*aRad*0.75); vec4 mv=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mv; vA=0.35+0.4*sin(a*3.0+uTime*4.0); vA*=1.0-uKappa*0.4; gl_PointSize=aSz*uPix*(7.0/max(0.5,-mv.z)); }`;
@@ -754,6 +839,7 @@ function frame(now){
   // flash on collapse
   const fl=Math.max(0,Math.sin(Math.PI*Math.min(1,S.collapse*1.6))); flash.material.opacity=fl*.9; flash.scale.setScalar(9+fl*6);
   frames.children.forEach((f,i)=>{ f.material.opacity=(.10+(i===3?.15:0))*(1-.6*S.collapse); });
+  updateCatMotion(T);
   renderer.render(scene,camera);
 }
 
@@ -762,7 +848,7 @@ function frame(now){
    ====================================================================== */
 (async()=>{
   refreshPhysics();
-  if(initGL()){ try{ await buildCat(); }catch(e){ console.error(e); } }
+  if(initGL()){ $('coh').textContent='LOADING'; log('loading models/schrodinger-cat.glb …'); try{ await buildCatGLB(); log('model ready — 9 parts, hologram + surface particles. type help'); }catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud', e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } } $('coh').textContent=S.observed?'OBSERVED':'COHERENT'; }
   document.addEventListener('visibilitychange',()=>{ last=performance.now(); });
   requestAnimationFrame(frame);
 })();

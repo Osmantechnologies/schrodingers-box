@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>GLB inspect</title>
+<style>body{margin:0;background:#111;color:#eee;font:12px monospace}#log{position:fixed;left:8px;top:8px;white-space:pre;max-height:95vh;overflow:auto;background:rgba(0,0,0,.6);padding:6px}</style>
+<canvas id="c"></canvas><div id="log"></div>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three'; import {GLTFLoader} from './vendor/GLTFLoader.js';
+const q=new URLSearchParams(location.search); const view=q.get('view')||'front'; const mode=q.get('mode')||'parts';
+const r=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true}); r.setSize(900,700); r.setClearColor(0x111111);
+const s=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(35,900/700,.01,100);
+s.add(new THREE.HemisphereLight(0xffffff,0x444444,1.2)); const dl=new THREE.DirectionalLight(0xffffff,1.5); dl.position.set(2,3,2); s.add(dl);
+const log=[]; const out=document.getElementById('log');
+new GLTFLoader().load('models/schrodinger-cat.glb',g=>{
+  const root=g.scene; const box=new THREE.Box3().setFromObject(root); const sz=new THREE.Vector3(); box.getSize(sz); const ctr=new THREE.Vector3(); box.getCenter(ctr);
+  log.push(`bbox min ${box.min.toArray().map(v=>v.toFixed(2))} max ${box.max.toArray().map(v=>v.toFixed(2))} size ${sz.toArray().map(v=>v.toFixed(2))}`);
+  log.push(`anims ${g.animations.length}`);
+  let i=0; root.traverse(o=>{ if(o.isMesh){ const b=new THREE.Box3().setFromObject(o); const c=new THREE.Vector3(); b.getCenter(c); const ss=new THREE.Vector3(); b.getSize(ss); const tris=o.geometry.index?o.geometry.index.count/3:o.geometry.attributes.position.count/3; const hue=(i*0.137)%1; const col=new THREE.Color().setHSL(hue,.9,.55); if(mode==='parts') o.material=new THREE.MeshStandardMaterial({color:col,roughness:.8}); if(tris>100) log.push(`#${i} ${o.name} tris ${tris|0} c(${c.x.toFixed(2)},${c.y.toFixed(2)},${c.z.toFixed(2)}) s(${ss.x.toFixed(2)},${ss.y.toFixed(2)},${ss.z.toFixed(2)}) hsl ${Math.round(hue*360)}`); i++; } });
+  s.add(root);
+  const d=2.4; if(view==='front') cam.position.set(0,ctr.y+.3,d); else if(view==='side') cam.position.set(d,ctr.y+.3,0); else if(view==='back') cam.position.set(0,ctr.y+.3,-d); else cam.position.set(d*.7,ctr.y+.6,d*.7);
+  cam.lookAt(ctr); s.add(new THREE.AxesHelper(.6)); s.add(new THREE.Box3Helper(box,0xffff00));
+  r.render(s,cam); out.textContent=log.join('\n'); window.__done=true;
+});
+</script>

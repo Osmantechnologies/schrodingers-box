@@ -4,7 +4,7 @@
 
 An interactive quantum observation chamber. A cat state lives inside a WebGL box; every number on the page — the Wigner function, negativity, purity, fidelity, photon statistics, and the result you get when you press **OBSERVE** — is computed from the actual state vector. Nothing is typed in.
 
-**Live:** https://lumiotradingbot-cyber.github.io/schrodingers-box/
+**Live:** https://steveindustries90.github.io/schrodingers-box/
 
 ![Schrödinger's Box](assets/reference-mockup.png)
 
@@ -28,7 +28,9 @@ Metrics, all numerical integrals over a 96×96 grid (72×72 on phones):
 - **Fidelity** — π ∫ W·W<sub>pure</sub> d²β, overlap with the undamped cat.
 - **P(n)**, ⟨n⟩, parity — from ψ<sub>n</sub> ∝ Σ<sub>k</sub> α<sub>k</sub><sup>n</sup>e<sup>−|α|²/2</sup>/√n!.
 
-The 3D chamber is illustrative: the point-cloud cat is seeded from a generated image, and its temporal copies are placed by the same α, φ, N and κ. The readouts are real; the cat is a picture of the readouts.
+The 3D chamber is illustrative: the cat is a Tripo-generated GLB (`models/schrodinger-cat.glb`, 9 usable parts, 19k tris, no rig) rendered as a hologram — barycentric wireframe + Fresnel shell + baked-texture stripe modulation, with ~7.5k particles sampled once from the real mesh surface (head-weighted). Two full-mesh temporal echoes flank it; deeper echoes are particles only. Breathing, head yaw/pitch (±2°) and tail sway (±3°) are procedural on pivot groups placed from bbox inspection. The readouts are real; the cat is a picture of the readouts.
+
+`inspect.html?view=front|side|iso&mode=parts|tex` is the model-inspection mode: colours each GLB part, logs the hierarchy, draws the bounding box.
 
 ## Terminal
 
