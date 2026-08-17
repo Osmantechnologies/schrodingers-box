@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schrödinger's Box — study log</title>
+<meta name="description" content="Six numerical experiments on a coherent-state cat: Kolmogorov–Smirnov validation of Born-rule sampling, Wehrl entropy against Lieb's bound, Mandel Q, quantum Fisher information, Z_N harmonic analysis and sub-Planck fringe scaling. Every run reproducible from its seed.">
+<meta property="og:title" content="Schrödinger's Box — study log">
+<meta property="og:description" content="Six numerical experiments on a cat state. Reproducible from a seed. Nothing tabulated in advance.">
+<meta name="theme-color" content="#050403">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@400;500;600&family=Archivo:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050403; --amber:#ff9d18; --amber-2:#ffb547; --amber-hi:#ffd58a; --ivory:#f2e6c9; --ivory-dim:rgba(242,230,201,.5);
+  --hair:rgba(255,157,24,.22); --hair-2:rgba(255,157,24,.11); --hair-3:rgba(255,157,24,.06);
+  --good:#ffb547; --bad:#ff7a4d;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --disp:'Barlow Condensed','IBM Plex Mono',sans-serif;
+  --head:'Archivo','Barlow Condensed',system-ui,sans-serif;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  --nav:66px; --wrap:1400px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:var(--nav)}
+body{background:var(--bg);color:var(--ivory);font-family:var(--mono);overflow-x:hidden;-webkit-text-size-adjust:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:1px solid var(--amber-2);outline-offset:3px}
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 40px}
+.cap{font-family:var(--disp);text-transform:uppercase;letter-spacing:.26em;font-size:11px;color:var(--ivory-dim)}
+/* nav */
+.nav{position:fixed;left:0;right:0;top:0;z-index:40;background:rgba(5,4,3,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair-2);padding-top:var(--sat)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:var(--nav);gap:24px}
+.brand{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.3em;white-space:nowrap}
+.brand::before{content:"";width:9px;height:9px;border:1px solid var(--amber);transform:rotate(45deg);flex:none}
+.nav ul{display:flex;gap:32px;list-style:none}
+.nav ul a{font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.nav ul a:hover,.nav ul a.on{color:var(--amber-hi)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--disp);font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;padding:11px 22px;border-radius:2px;border:1px solid var(--hair);color:var(--amber-hi);transition:background .2s,border-color .2s}
+.btn:hover{background:rgba(255,157,24,.1);border-color:var(--amber)}
+.btn.solid{background:var(--amber);border-color:var(--amber);color:#1a0f02;font-weight:600}
+.btn.solid:hover{background:var(--amber-2)}
+.btn.sm{padding:8px 16px;font-size:11px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+/* header */
+header.top{padding:calc(var(--nav) + 76px) 0 40px;border-bottom:1px solid var(--hair-2)}
+.eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.eyebrow i{width:34px;height:1px;background:var(--amber);display:block}
+h1{font-family:var(--head);font-weight:800;font-size:clamp(34px,4.4vw,64px);line-height:1;letter-spacing:-.022em;color:#f6ecd6;max-width:18ch}
+.sub{margin-top:22px;font-size:14.5px;line-height:1.75;color:var(--ivory-dim);max-width:74ch}
+.sub b{color:var(--ivory);font-weight:500}
+.disc{margin-top:20px;padding:14px 18px;border:1px solid var(--hair-2);border-left:2px solid var(--amber);border-radius:2px;font-size:12.5px;line-height:1.7;color:var(--ivory-dim);max-width:88ch}
+.disc b{color:var(--amber-2);font-weight:500}
+/* run bar */
+.runbar{position:sticky;top:var(--nav);z-index:30;background:rgba(5,4,3,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hair-2)}
+.runbar .wrap{display:flex;align-items:center;gap:0;flex-wrap:wrap}
+.rb{padding:14px 24px;border-left:1px solid var(--hair-2);display:flex;flex-direction:column;gap:4px;min-width:0}
+.rb:first-child{border-left:0;padding-left:0}
+.rb .l{font-family:var(--disp);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.rb .v{font-family:var(--disp);font-size:16px;color:var(--amber-2);white-space:nowrap}
+.rb input{width:118px;background:rgba(0,0,0,.4);border:1px solid var(--hair-2);border-radius:2px;padding:3px 8px;color:var(--amber-hi);font-family:var(--mono);font-size:13px}
+.rb.acts{margin-left:auto;flex-direction:row;align-items:center;gap:10px;border-left:0}
+.prog{height:2px;background:var(--hair-2)}
+.prog i{display:block;height:100%;width:0;background:var(--amber);box-shadow:0 0 8px var(--amber);transition:width .25s}
+/* study */
+.study{padding:74px 0;border-bottom:1px solid var(--hair-3)}
+.sh{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:baseline;margin-bottom:12px}
+.sh .id{font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.1em}
+.sh h2{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.5vw,34px);letter-spacing:-.012em;color:#f6ecd6}
+.badge{font-family:var(--disp);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--hair-2);border-radius:2px;color:var(--ivory-dim);white-space:nowrap}
+.badge.ok{color:var(--good);border-color:rgba(255,181,71,.45);background:rgba(255,157,24,.08)}
+.badge.no{color:var(--bad);border-color:rgba(255,122,77,.45);background:rgba(255,122,77,.08)}
+.badge.run{color:var(--ivory-dim)}
+.field{font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim);margin-bottom:28px}
+.sbody{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:48px;align-items:start}
+.prose p{font-size:13.5px;line-height:1.8;color:var(--ivory-dim);margin-bottom:14px}
+.prose p b{color:var(--ivory);font-weight:500}
+.prose .eq{margin:16px 0;padding:14px 16px;border:1px solid var(--hair-2);border-radius:2px;font-size:13px;color:var(--amber-2);overflow-x:auto;white-space:nowrap;background:rgba(0,0,0,.28)}
+.prose .ref{margin-top:16px;font-size:11.5px;color:rgba(242,230,201,.36);line-height:1.7}
+.panelbox{border:1px solid var(--hair-2);border-radius:4px;background:rgba(8,6,3,.5);overflow:hidden}
+.panelbox .ph{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;border-bottom:1px solid var(--hair-2);font-family:var(--disp);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--ivory)}
+.panelbox .ph span{color:var(--ivory-dim);letter-spacing:.16em}
+.plot{display:block;width:100%;height:auto;background:#030201}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:9px 16px;text-align:right;border-top:1px solid var(--hair-3);font-variant-numeric:tabular-nums}
+th{font-family:var(--disp);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-dim);text-align:right;border-top:0}
+th:first-child,td:first-child{text-align:left}
+td{color:var(--ivory-dim)}
+td.k{color:var(--amber-2)}
+tr.hi td{color:var(--ivory)}
+tr.hi td.k{color:var(--amber-hi)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 18px;padding:14px 16px;border-top:1px solid var(--hair-2)}
+.kv dt{font-size:12.5px;color:var(--ivory-dim)}
+.kv dd{font-family:var(--disp);font-size:16px;color:var(--amber-2);text-align:right;font-variant-numeric:tabular-nums}
+.kv dd.dim{color:var(--ivory-dim);font-size:14px}
+/* method footer */
+.method{padding:74px 0 90px}
+.method h2{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.5vw,32px);color:#f6ecd6;margin-bottom:24px}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.mgrid>div{background:var(--bg);padding:24px 26px}
+.mgrid h3{font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2);margin-bottom:12px}
+.mgrid p{font-size:12.5px;line-height:1.75;color:var(--ivory-dim)}
+footer{padding:34px 0 calc(30px + var(--sab));display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--hair-3)}
+footer .cap{font-size:10.5px}
+footer a:hover{color:var(--amber-hi)}
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){ .rv{opacity:1;transform:none;transition:none} }
+@media (max-width:1080px){
+  .wrap{padding:0 24px}
+  .sbody{grid-template-columns:minmax(0,1fr);gap:28px}
+  .mgrid{grid-template-columns:1fr}
+  .study{padding:54px 0}
+  header.top{padding:calc(var(--nav) + 48px) 0 32px}
+}
+@media (max-width:900px){ .nav ul{display:none} }
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .brand{font-size:14px;letter-spacing:.22em}
+  .rb{padding:10px 14px}
+  .rb.acts{width:100%;margin-left:0;padding-left:0;border-top:1px solid var(--hair-2)}
+  .sh{grid-template-columns:auto 1fr;row-gap:8px}
+  .sh .badge{grid-column:1/-1;justify-self:start}
+  th,td{padding:7px 10px;font-size:11.5px}
+  .kv{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">SCHRÖDINGER'S BOX</a>
+    <ul>
+      <li><a href="index.html#experiment">The experiment</a></li>
+      <li><a href="index.html#notes">Field notes</a></li>
+      <li><a href="studies.html" class="on">Study log</a></li>
+    </ul>
+    <a class="btn sm" href="lab.html">Enter lab</a>
+  </div>
+</nav>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow"><i></i><span class="cap">Numerical experiment series</span></div>
+    <h1>Six studies on a cat state.</h1>
+    <p class="sub">Each study below is <b>computed in your browser when this page loads</b> — a fresh run against the same state the chamber holds. Nothing here is a stored table. Change the seed and every number changes; keep the seed and the run reproduces exactly, down to the last decimal.</p>
+    <div class="disc"><b>What this is.</b> These are numerical experiments: real mathematics executed on a simulated quantum state, in the sense that computational physics is experimental. They are <b>not</b> laboratory measurements — no ion was trapped, nothing was cooled, no photon was counted. Where a result is compared against theory, the theory is cited and the comparison is made honestly, including when the agreement is only approximate.</div>
+  </div>
+</header>
+
+<div class="runbar">
+  <div class="wrap">
+    <div class="rb"><span class="l">Run</span><span class="v" id="r-id">—</span></div>
+    <div class="rb"><span class="l">Seed</span><input id="r-seed" value="" inputmode="numeric" aria-label="Random seed"></div>
+    <div class="rb"><span class="l">State</span><span class="v" id="r-state">—</span></div>
+    <div class="rb"><span class="l">Grid</span><span class="v" id="r-grid">—</span></div>
+    <div class="rb"><span class="l">Wall time</span><span class="v" id="r-ms">—</span></div>
+    <div class="rb acts">
+      <button class="btn sm solid" id="b-run">New run</button>
+      <button class="btn sm" id="b-json">Export JSON</button>
+      <button class="btn sm" id="b-csv">Export CSV</button>
+    </div>
+  </div>
+  <div class="prog"><i id="prog"></i></div>
+</div>
+
+<main id="studies"></main>
+
+<section class="method">
+  <div class="wrap">
+    <h2 class="rv">Method</h2>
+    <div class="mgrid rv">
+      <div>
+        <h3>The state under test</h3>
+        <p>An equal superposition of <em>N</em> coherent states on a ring in phase space, α<sub>k</sub> = α·e<sup>i(2πk/N+φ)</sup>, optionally squeezed and damped. Its Wigner function is evaluated in closed form on a 96×96 grid with all cross terms retained — those cross terms are the interference, and dropping them would turn the state into an ordinary mixture.</p>
+      </div>
+      <div>
+        <h3>Reproducibility</h3>
+        <p>All stochastic parts run on a seeded mulberry32 generator, never <code>Math.random</code>. The seed appears in the URL, so a run is a link. Re-running the same seed on the same build reproduces every digit; the exports carry the seed, the state parameters and the wall time alongside the results.</p>
+      </div>
+      <div>
+        <h3>What would falsify it</h3>
+        <p>Each study declares a prediction from published theory and a pass condition before it runs. A KS p-value that collapses, a Wehrl excess below Lieb's bound, a Mandel Q that goes negative for a coherent state, or a fringe exponent away from 1 would each mark the run failed — and the badge says so rather than hiding it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+    <span class="cap">Schrödinger's Box · Numerical experiments · MIT licensed</span>
+    <span class="cap"><a href="index.html">Home</a> · <a href="lab.html">Lab</a> · <a href="https://github.com/steveindustries90/schrodingers-box" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script type="module">
+import { S, M, G } from './js/physics.js';
+import { STUDIES, runAll, runId, seedFromString } from './js/studies.js';
+
+const $=id=>document.getElementById(id);
+const AM='#ffb547', AMH='#ffd58a', DIM='rgba(242,230,201,.42)', GRID='rgba(255,157,24,.13)';
+
+/* ---------- tiny plot helpers ---------- */
+function mk(w,h){ const c=document.createElement('canvas'); c.className='plot'; c.width=w; c.height=h; return c; }
+function axes(x,w,h,{xl='',yl=''}={}){
+  x.clearRect(0,0,w,h); x.fillStyle='#030201'; x.fillRect(0,0,w,h);
+  x.strokeStyle=GRID; x.lineWidth=1;
+  for(let i=1;i<6;i++){ const yy=Math.round(i*h/6)+.5; x.beginPath(); x.moveTo(38,yy); x.lineTo(w-10,yy); x.stroke(); }
+  for(let i=1;i<6;i++){ const xx=Math.round(38+i*(w-48)/6)+.5; x.beginPath(); x.moveTo(xx,8); x.lineTo(xx,h-26); x.stroke(); }
+  x.strokeStyle='rgba(255,181,71,.4)'; x.beginPath(); x.moveTo(38,h-26.5); x.lineTo(w-10,h-26.5); x.moveTo(38.5,8); x.lineTo(38.5,h-26); x.stroke();
+  x.fillStyle=DIM; x.font='10px IBM Plex Mono, monospace';
+  if(xl) x.fillText(xl,w-10-x.measureText(xl).width,h-8);
+  if(yl) x.fillText(yl,4,16);
+}
+function line(x,pts,w,h,{col=AM,fill=false,dot=false}={}){
+  const L=38,R=w-10,T=8,B=h-26;
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys,0),y1=Math.max(...ys);
+  const px=v=>L+(x1===x0?0.5:(v-x0)/(x1-x0))*(R-L), py=v=>B-(y1===y0?0.5:(v-y0)/(y1-y0))*(B-T);
+  x.beginPath(); pts.forEach((p,i)=>{ const a=px(p[0]),b=py(p[1]); i?x.lineTo(a,b):x.moveTo(a,b); });
+  x.strokeStyle=col; x.lineWidth=1.6; x.stroke();
+  if(fill){ x.lineTo(px(x1),B); x.lineTo(px(x0),B); x.closePath();
+    const g=x.createLinearGradient(0,T,0,B); g.addColorStop(0,'rgba(255,157,24,.3)'); g.addColorStop(1,'rgba(255,157,24,0)'); x.fillStyle=g; x.fill(); }
+  if(dot){ x.fillStyle=AMH; pts.forEach(p=>{ x.beginPath(); x.arc(px(p[0]),py(p[1]),2.6,0,7); x.fill(); }); }
+  return {px,py,x0,x1,y0,y1,L,R,T,B};
+}
+function bars(x,vals,w,h,{col=AM,hi=-1}={}){
+  const L=38,R=w-10,T=8,B=h-26, n=vals.length, mx=Math.max(...vals,1e-12);
+  const bw=(R-L)/n;
+  for(let i=0;i<n;i++){ const bh=(vals[i]/mx)*(B-T); x.fillStyle=(i===hi)?AMH:col; x.globalAlpha=(i===hi)?1:.8;
+    x.fillRect(L+i*bw+.5, B-bh, Math.max(1,bw-1.5), bh); }
+  x.globalAlpha=1;
+}
+const f=(v,d=3)=>Number.isFinite(v)?v.toFixed(d):'—';
+const sci=(v)=>{ if(!Number.isFinite(v)) return '—'; if(v===0) return '0'; const e=Math.floor(Math.log10(Math.abs(v)));
+  return (Math.abs(e)<4)? v.toPrecision(4) : (v/Math.pow(10,e)).toFixed(2)+'e'+e; };
+
+/* ---------- study renderers ---------- */
+const COPY={
+  born:{
+    prose:`<p>The chamber's <b>observe</b> action claims to sample the Born rule. This study tests that claim the way you would test any random number generator: draw from it, then compare the empirical distribution against the exact one with a <b>Kolmogorov–Smirnov</b> test.</p>
+      <p>The KS statistic is the largest vertical gap between the empirical distribution function and the true one. Under the null hypothesis it converges to the Kolmogorov distribution, which gives a p-value that does not depend on the shape of P(x) — a distribution-free test, which is exactly why it suits a distribution as irregular as a cat's.</p>
+      <div class="eq">D<sub>n</sub> = sup<sub>x</sub> |F<sub>n</sub>(x) − F(x)| &nbsp;·&nbsp; √n·D<sub>n</sub> → K</div>
+      <p>The second prediction is sharper than the first: by the Dvoretzky–Kiefer–Wolfowitz inequality, D<sub>n</sub> must shrink as <b>n<sup>−1/2</sup></b>. Fitting log D against log n recovers that exponent, and a sampler with a systematic bias would flatten the slope instead.</p>
+      <p class="ref">Kolmogorov (1933); Smirnov (1948); Dvoretzky, Kiefer &amp; Wolfowitz (1956). Pass: every p &gt; 0.01 and fitted exponent within 0.16 of −½.</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'log n',yl:'log Dₙ'});
+      const pts=r.rows.map(t=>[Math.log10(t.n),Math.log10(t.D)]);
+      const g=line(x,pts,560,260,{dot:true});
+      x.setLineDash([4,4]); x.strokeStyle='rgba(242,230,201,.35)'; x.beginPath();
+      const a0=pts[0], slope=-0.5, ref=pts.map(p=>[p[0], a0[1]+slope*(p[0]-a0[0])*Math.LN10/Math.LN10]);
+      ref.forEach((p,i)=>{ const px=g.px(p[0]),py=g.py(p[1]); i?x.lineTo(px,py):x.moveTo(px,py); });
+      x.stroke(); x.setLineDash([]);
+      x.fillStyle=DIM; x.font='10px IBM Plex Mono'; x.fillText('dashed: ideal n^(−1/2)',48,22);
+      const rows=r.rows.map(t=>`<tr><td>${t.n.toLocaleString()}</td><td class="k">${f(t.D,4)}</td><td>${f(t.lambda,3)}</td><td class="${t.p>0.01?'k':''}">${f(t.p,3)}</td></tr>`).join('');
+      return {canvas:c, head:'Convergence of Dₙ', sub:'four sample sizes',
+        html:`<table><thead><tr><th>n</th><th>Dₙ</th><th>√n·Dₙ</th><th>p</th></tr></thead><tbody>${rows}</tbody></table>
+        <dl class="kv"><dt>Fitted exponent</dt><dd>${f(r.exponent,3)}</dd><dt>Theory (DKW)</dt><dd class="dim">−0.500</dd><dt>Fit quality r²</dt><dd class="dim">${f(r.r2,4)}</dd></dl>`};
+    }},
+  wehrl:{
+    prose:`<p>The <b>Husimi Q function</b> is the state smoothed by a coherent state — a strictly positive probability density on phase space. Its Shannon entropy is the <b>Wehrl entropy</b>, a classical measure of how spread out a quantum state is.</p>
+      <div class="eq">S<sub>W</sub> = −∫ Q(β) ln Q(β) d²β</div>
+      <p>Wehrl conjectured and <b>Lieb proved in 1978</b> that coherent states minimise it: no state in the whole Hilbert space has a lower Wehrl entropy than a single coherent state of the same energy. That makes the excess ΔS above the coherent-state value a non-negative quantity for every state — a floor that cannot be beaten.</p>
+      <p>Q is computed here on its own grid from the coherent-state overlaps directly, independently of the Wigner code, so this study is not reusing the machinery it is meant to check. Two exact numbers fall out as controls: a coherent state must give <b>S<sub>W</sub> = 1 + ln π</b>, and once the components stop overlapping, Q becomes N disjoint copies of that same bell carrying weight 1/N each — so the excess must approach <b>exactly ln N</b>.</p>
+      <p>The table reports the deviation from ln N, and it is instructive where it grows: at fixed α the lobes crowd together as N rises, they start to overlap, and the entropy falls short of ln N. The failure of the idealisation is visible rather than hidden.</p>
+      <p class="ref">Wehrl (1979); Lieb, Commun. Math. Phys. 62, 35 (1978). Pass: ΔS ≥ 0 for every N, and the coherent reference within 2×10⁻³ of 1 + ln π.</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'components N',yl:'ΔS'});
+      line(x,r.sweep.map(s=>[s.N,s.excess]),560,260,{dot:true,fill:true});
+      line(x,r.sweep.map(s=>[s.N,s.lnN]),560,260,{col:'rgba(242,230,201,.4)'});
+      x.fillStyle=DIM; x.font='10px IBM Plex Mono'; x.fillText('pale: ln N',48,22);
+      const rows=r.sweep.map(s=>`<tr class="${s.N===S.N?'hi':''}"><td>${s.N}</td><td class="k">${f(s.excess,4)}</td><td>${f(s.lnN,4)}</td><td>${f(s.dev,4)}</td></tr>`).join('');
+      return {canvas:c, head:'Entropy excess vs N', sub:'against ln N',
+        html:`<table><thead><tr><th>N</th><th>ΔS</th><th>ln N</th><th>deviation</th></tr></thead><tbody>${rows}</tbody></table>
+        <dl class="kv"><dt>Coherent reference</dt><dd>${f(r.coherent,4)}</dd><dt>Analytic 1 + ln π</dt><dd class="dim">${f(r.analytic,4)}</dd><dt>Residual</dt><dd class="dim">${sci(r.analyticErr)}</dd></dl>`};
+    }},
+  mandel:{
+    prose:`<p>How photons distribute across number states separates classical light from quantum light. The <b>Mandel Q parameter</b> compares the variance of the photon number against a Poisson distribution of the same mean.</p>
+      <div class="eq">Q<sub>M</sub> = (⟨Δn²⟩ − ⟨n⟩)/⟨n⟩ &nbsp;·&nbsp; coherent ⇒ 0, thermal ⇒ ⟨n⟩</div>
+      <p>A coherent state is exactly Poissonian, so it must return zero — that is this study's built-in control, and a drift away from zero would indict the whole photon-statistics calculation rather than the physics.</p>
+      <p>A cat state is different in a specific way: interference between the components <b>annihilates every number state except multiples of N</b>, leaving a comb. The run shows the consequence, and it is subtler than the usual telling — the comb only inflates the variance once its spacing N is comparable to the width of the Poisson envelope, which is α. At α ≈ 3 a two- or three-component cat therefore returns Q ≈ 0 despite being violently non-classical, and Q only lifts off at N = 6 and beyond.</p>
+      <p>That is worth stating plainly: <b>Q<sub>M</sub> is blind to this kind of non-classicality</b>. The structure is in the comb, not the variance — which is exactly why Wigner negativity, not photon statistics, is the witness used elsewhere on this site.</p>
+      <p class="ref">Mandel, Opt. Lett. 4, 205 (1979). Pass: |Q| &lt; 0.02 for the coherent control and Q ≥ 0 for the cat.</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'photon number n',yl:'P(n)'});
+      bars(x,Array.from(r.P.slice(0,48)),560,260);
+      const rows=r.rows.map(s=>`<tr class="${s.N===S.N?'hi':''}"><td>${s.N===1?'1 (coherent)':s.N}</td><td>${f(s.mean,2)}</td><td>${f(s.var,2)}</td><td class="k">${f(s.Q,3)}</td></tr>`).join('');
+      return {canvas:c, head:'P(n) for this state', sub:'first 48 number states',
+        html:`<table><thead><tr><th>N</th><th>⟨n⟩</th><th>Var(n)</th><th>Q</th></tr></thead><tbody>${rows}</tbody></table>
+        <dl class="kv"><dt>Mandel Q</dt><dd>${f(r.Q,4)}</dd><dt>Coherent control</dt><dd class="dim">${f(r.coherentQ,5)}</dd></dl>`};
+    }},
+  fisher:{
+    prose:`<p>If the cat state were used as a probe, how well could it measure a phase? The <b>quantum Fisher information</b> answers that, and the <b>quantum Cramér–Rao bound</b> turns it into a hard limit on precision that no estimator can beat.</p>
+      <div class="eq">F<sub>Q</sub> = 4·Var(n)&nbsp;&nbsp;·&nbsp;&nbsp;Δφ ≥ 1/√F<sub>Q</sub></div>
+      <p>A coherent state of the same energy has Var(n) = ⟨n⟩, which fixes the <b>standard quantum limit</b> at F = 4⟨n⟩. The ratio between the two is the metrological gain — and the honest result here is that for this family it is modest: a few percent at N = 6, and essentially nothing for N ≤ 4. Phase estimation generated by n̂ only sees the photon-number variance, and the number comb barely changes it. The dramatic Heisenberg-scaling advantages quoted for cat states belong to <em>displacement</em> sensing, which is a different generator and not what this study measures.</p>
+      <p>There is an exact identity lurking here — the gain must equal Q<sub>M</sub> + 1, tying this study algebraically to the one above it. The run checks that identity numerically and reports the residual; anything above rounding error would mean one of the two studies is wrong.</p>
+      <p class="ref">Braunstein &amp; Caves, PRL 72, 3439 (1994); Giovannetti, Lloyd &amp; Maccone, Nat. Photon. 5, 222 (2011).</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'components N',yl:'F_Q'});
+      line(x,r.rows.map(s=>[s.N,s.F]),560,260,{dot:true});
+      line(x,r.rows.map(s=>[s.N,s.Fsql]),560,260,{col:'rgba(242,230,201,.4)'});
+      x.fillStyle=DIM; x.font='10px IBM Plex Mono'; x.fillText('pale: standard quantum limit',48,22);
+      const rows=r.rows.map(s=>`<tr class="${s.N===S.N?'hi':''}"><td>${s.N}</td><td>${f(s.F,1)}</td><td>${f(s.Fsql,1)}</td><td class="k">${f(s.gain,3)}×</td></tr>`).join('');
+      return {canvas:c, head:'Fisher information vs N', sub:'against the SQL',
+        html:`<table><thead><tr><th>N</th><th>F_Q</th><th>F_SQL</th><th>gain</th></tr></thead><tbody>${rows}</tbody></table>
+        <dl class="kv"><dt>Phase sensitivity Δφ</dt><dd>${sci(r.dphi)}</dd><dt>Gain over SQL</dt><dd>${f(r.gain,3)}×</dd><dt>Identity residual</dt><dd class="dim">${sci(r.identity)}</dd></dl>`};
+    }},
+  harmonics:{
+    prose:`<p>An <em>N</em>-component cat is invariant under rotation by 2π/N in phase space — it carries a <b>cyclic group Z<sub>N</sub></b> symmetry. Symmetry claims are cheap to make and easy to check, so this study measures it rather than asserting it.</p>
+      <p>The Wigner function is sampled around the circle of radius √2·α that runs through the component lobes, giving a periodic trace. Its <b>discrete Fourier transform</b> must then place all of its power on harmonics that are multiples of N, and nowhere else — the Fourier dual of the symmetry.</p>
+      <div class="eq">c<sub>m</sub> = (1/M) Σ<sub>j</sub> W(θ<sub>j</sub>)·e<sup>−imθ<sub>j</sub></sup> &nbsp;·&nbsp; peak at m = N</div>
+      <p>Symmetry here belongs to the <b>unsqueezed</b> cat, so that is what is measured. Squeezing rescales x and p by reciprocal factors, deforming the ring into an ellipse and breaking Z<sub>N</sub> outright — when the live state is squeezed, that broken case is measured alongside as a control rather than quietly excluded, and it lands on an even harmonic instead of N.</p>
+      <p>Leakage into harmonics that are <em>not</em> multiples of N is discretisation error rather than physics — the trace is interpolated off a finite grid, so the pass threshold follows the grid resolution (phones compute 72² instead of 96²).</p>
+      <p class="ref">The sixfold case reproduces the symmetry shown in Saner et al., Phys. Rev. X 16, 021049 (2026). Pass: dominant harmonic = N for the unsqueezed state.</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'harmonic m',yl:'|c_m|'});
+      bars(x,r.spectrum.slice(1),560,260,{hi:r.dominant-1});
+      return {canvas:c, head:'Angular spectrum', sub:'unsqueezed · harmonics 1–31',
+        html:`<dl class="kv"><dt>Dominant harmonic</dt><dd>m = ${r.dominant}</dd><dt>Is a multiple of N</dt><dd class="dim">${r.dominant%r.expected===0?'yes':'no'} (N = ${r.expected})</dd><dt>Power on multiples of N</dt><dd>${f(r.supported*100,1)}%</dd><dt>Threshold at ${r.grid}² grid</dt><dd class="dim">${f(r.tol*100,0)}%</dd>${
+          r.broken?`<dt>Squeezed control (r = ${f(r.squeeze,2)})</dt><dd class="dim">m = ${r.broken.dominant} · Z<sub>N</sub> broken</dd>`:''}</dl>`};
+    }},
+  fringes:{
+    prose:`<p>Zurek's 2001 result is the strangest thing on this page. The interference fringes at the centre of a cat state are finer than the components that produce them, and they keep getting finer as the components move apart — producing structure on a phase-space scale <b>smaller than Planck's constant</b>.</p>
+      <div class="eq">k ∝ α &nbsp;⇒&nbsp; a ~ 1/k² ~ α<sup>−2</sup> &nbsp;(sub-Planck)</div>
+      <p>Nothing is being violated: the fringes are not localisable features, and no measurement extracts information at that scale from a single copy. But the structure is real, and it sets how violently the state responds to a perturbation — which is precisely why cat states decohere so fast, and why they make sensitive probes.</p>
+      <p>The measurement here takes a cut through the centre of W for a ladder of separations, extracts the dominant spatial frequency by DFT, and fits the exponent. <b>The prediction is a slope of exactly 1</b>, and any systematic error in the Wigner grid would bend it.</p>
+      <p class="ref">Zurek, Nature 412, 712 (2001). Two-component cat, undamped, unsqueezed. Pass: exponent within 0.2 of 1 and r² &gt; 0.95.</p>`,
+    render(r){
+      const c=mk(560,260), x=c.getContext('2d');
+      axes(x,560,260,{xl:'log α',yl:'log k'});
+      line(x,r.rows.map(s=>[Math.log10(s.alpha),Math.log10(s.k)]),560,260,{dot:true});
+      const rows=r.rows.map(s=>`<tr><td>${f(s.alpha,1)}</td><td class="k">${f(s.k,3)}</td><td>${sci(s.area)}</td></tr>`).join('');
+      return {canvas:c, head:'Fringe wavenumber vs α', sub:'log–log',
+        html:`<table><thead><tr><th>α</th><th>k</th><th>patch area ~1/k²</th></tr></thead><tbody>${rows}</tbody></table>
+        <dl class="kv"><dt>Fitted exponent</dt><dd>${f(r.exponent,3)}</dd><dt>Zurek prediction</dt><dd class="dim">1.000</dd><dt>Fit quality r²</dt><dd class="dim">${f(r.r2,4)}</dd></dl>`};
+    }},
+};
+
+/* ---------- build the page ---------- */
+function build(){
+  $('studies').innerHTML=STUDIES.map(s=>`
+    <section class="study" id="${s.key}">
+      <div class="wrap">
+        <div class="sh rv"><span class="id">${s.id}</span><h2>${s.title}</h2><span class="badge run" id="badge-${s.key}">Running…</span></div>
+        <div class="field rv">${s.field}</div>
+        <div class="sbody">
+          <div class="prose rv">${COPY[s.key].prose}</div>
+          <div class="panelbox rv">
+            <div class="ph"><span id="ph-${s.key}">Result</span><span id="phs-${s.key}"></span></div>
+            <div id="plot-${s.key}"></div>
+            <div id="out-${s.key}"></div>
+          </div>
+        </div>
+      </div>
+    </section>`).join('');
+  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.1});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+}
+
+let LAST=null;
+function present(res){
+  LAST=res;
+  $('r-id').textContent=res.id;
+  $('r-state').textContent=`α ${res.params.alpha.toFixed(2)} · N ${res.params.N} · κ ${res.params.kappa.toFixed(3)}`;
+  $('r-grid').textContent=`${res.params.grid}²`;
+  $('r-ms').textContent=`${res.ms} ms`;
+  STUDIES.forEach(s=>{
+    const r=res.studies[s.key], view=COPY[s.key].render(r);
+    const pw=$('plot-'+s.key); pw.innerHTML=''; pw.appendChild(view.canvas);
+    $('out-'+s.key).innerHTML=view.html;
+    $('ph-'+s.key).textContent=view.head; $('phs-'+s.key).textContent=view.sub+' · '+r.ms+' ms';
+    const b=$('badge-'+s.key);
+    b.className='badge '+(r.pass?'ok':'no');
+    b.textContent=r.pass?'Agrees with theory':'Deviation — see result';
+  });
+}
+
+async function go(seed){
+  $('b-run').disabled=true; $('prog').style.width='8%';
+  build();
+  await new Promise(r=>setTimeout(r,30));
+  const res=runAll(seed);
+  $('prog').style.width='100%';
+  present(res);
+  setTimeout(()=>{ $('prog').style.width='0%'; $('b-run').disabled=false; },600);
+  const u=new URL(location); u.searchParams.set('seed',String(seed)); history.replaceState({},'',u);
+}
+
+$('b-run').addEventListener('click',()=>{
+  const raw=$('r-seed').value.trim();
+  const seed=raw? (/^\d+$/.test(raw)? (parseInt(raw,10)>>>0) : seedFromString(raw)) : (Math.random()*4294967296)>>>0;
+  $('r-seed').value=String(seed);
+  go(seed);
+});
+$('b-json').addEventListener('click',()=>{
+  if(!LAST) return;
+  dl(new Blob([JSON.stringify(LAST,(k,v)=>ArrayBuffer.isView(v)?Array.from(v).map(n=>+n.toPrecision(6)):v,2)],{type:'application/json'}), LAST.id+'.json');
+});
+$('b-csv').addEventListener('click',()=>{
+  if(!LAST) return;
+  const L=['study,metric,value'];
+  const S1=LAST.studies;
+  S1.born.rows.forEach(r=>L.push(`S-01,D(n=${r.n}),${r.D}`),0);
+  S1.born.rows.forEach(r=>L.push(`S-01,p(n=${r.n}),${r.p}`));
+  L.push(`S-01,exponent,${S1.born.exponent}`);
+  L.push(`S-02,wehrl_entropy,${S1.wehrl.S}`,`S-02,excess,${S1.wehrl.excess}`);
+  L.push(`S-03,mean_n,${S1.mandel.mean}`,`S-03,var_n,${S1.mandel.variance}`,`S-03,mandel_Q,${S1.mandel.Q}`);
+  L.push(`S-04,fisher_F,${S1.fisher.F}`,`S-04,gain,${S1.fisher.gain}`,`S-04,dphi,${S1.fisher.dphi}`);
+  L.push(`S-05,dominant_harmonic,${S1.harmonics.dominant}`,`S-05,purity,${S1.harmonics.purity}`);
+  S1.fringes.rows.forEach(r=>L.push(`S-06,k(alpha=${r.alpha}),${r.k}`));
+  L.push(`S-06,exponent,${S1.fringes.exponent}`);
+  dl(new Blob([L.join('\n')],{type:'text/csv'}), LAST.id+'.csv');
+});
+function dl(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),4000); }
+
+/* boot */
+const q=new URL(location).searchParams.get('seed');
+const seed0 = q ? (/^\d+$/.test(q)? (parseInt(q,10)>>>0) : seedFromString(q)) : (Math.random()*4294967296)>>>0;
+$('r-seed').value=String(seed0);
+go(seed0);
+</script>
+</body>
+</html>

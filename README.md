@@ -6,6 +6,7 @@ An interactive quantum observation chamber. A cat state lives inside a WebGL box
 
 **Live:** https://steveindustries90.github.io/schrodingers-box/ — landing page
 **The instrument:** https://steveindustries90.github.io/schrodingers-box/lab.html
+**Study log:** https://steveindustries90.github.io/schrodingers-box/studies.html
 
 ![Schrödinger's Box](assets/reference-mockup.png)
 
@@ -50,6 +51,8 @@ Type `help` in the bottom bar. `psi()` prints the ket. `wigner(x,p)` evaluates W
 | File | What it is |
 |---|---|
 | `index.html` | Landing page — five fullscreen panels: hero chamber, interactive Wigner, field notes, methodology, measurement + CTA. |
+| `studies.html` | Study log — six numerical experiments, recomputed in-browser each load, reproducible from a seed. |
+| `js/studies.js` | The analyses: KS test, Wehrl/Lieb, Mandel Q, Fisher information, Zₙ harmonics, Zurek fringe scaling. |
 | `lab.html` | The instrument — full controls, telemetry, Wigner panel, terminal, OBSERVE. |
 | `js/physics.js` | Physics core: state, Wigner function, metrics, Born-rule sampling. No DOM. |
 | `js/chamber.js` | three.js scene: chamber, hologram cat, particles, reflections, post chain. |
