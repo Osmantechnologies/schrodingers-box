@@ -30,6 +30,8 @@ Metrics, all numerical integrals over a 96×96 grid (72×72 on phones):
 
 The 3D chamber is illustrative: the cat is a Tripo-generated GLB (`models/schrodinger-cat.glb`, 9 usable parts, 19k tris, no rig) rendered as a hologram — barycentric wireframe + Fresnel shell + baked-texture stripe modulation, with ~7.5k particles sampled once from the real mesh surface (head-weighted). Two full-mesh temporal echoes flank it; deeper echoes are particles only. Breathing, head yaw/pitch (±2°) and tail sway (±3°) are procedural on pivot groups placed from bbox inspection. The readouts are real; the cat is a picture of the readouts.
 
+UI: instrument layout — controls column (Basic / Field / Environment tabs, each slider with a live mini-graph cut from the state), chamber centre, telemetry cards with sparklines + confidence bars (grid-mass and fringe-resolution), Wigner panel with W/P(x)/P(p) tabs and the Fock strip, transport deck with the W(x,p=0) waveform scrubber. Field and Environment sliders drive real uniforms (particle gain, scan rate, echo depth, ring drift, bloom, grain, grid, reflection).
+
 Post chain: RenderPass → UnrealBloom (half-res, threshold 0.8) → ACES tone-map → film pass (grain, vignette, radial chromatic aberration that spikes on collapse). The hologram and particles are mirrored through the floor with a `REFL` shader define so the floor reads as polished glass. Bloom switches off automatically when the adaptive quality tier drops.
 
 `inspect.html?view=front|side|iso&mode=parts|tex` is the model-inspection mode: colours each GLB part, logs the hierarchy, draws the bounding box.
