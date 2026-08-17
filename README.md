@@ -4,7 +4,8 @@
 
 An interactive quantum observation chamber. A cat state lives inside a WebGL box; every number on the page — the Wigner function, negativity, purity, fidelity, photon statistics, and the result you get when you press **OBSERVE** — is computed from the actual state vector. Nothing is typed in.
 
-**Live:** https://steveindustries90.github.io/schrodingers-box/
+**Live:** https://steveindustries90.github.io/schrodingers-box/ — landing page
+**The instrument:** https://steveindustries90.github.io/schrodingers-box/lab.html
 
 ![Schrödinger's Box](assets/reference-mockup.png)
 
@@ -43,6 +44,18 @@ Type `help` in the bottom bar. `psi()` prints the ket. `wigner(x,p)` evaluates W
 ## Keys
 
 `Space` play/pause · `O` observe · `Esc` reset / close · drag to orbit · wheel to zoom
+
+## Structure
+
+| File | What it is |
+|---|---|
+| `index.html` | Landing page. Live hero chamber, real stat bar, the experiment / field notes / methodology. |
+| `lab.html` | The instrument — full controls, telemetry, Wigner panel, terminal, OBSERVE. |
+| `js/physics.js` | Physics core: state, Wigner function, metrics, Born-rule sampling. No DOM. |
+| `js/chamber.js` | three.js scene: chamber, hologram cat, particles, reflections, post chain. |
+| `vendor/` | three.js r169 + loaders + postprocessing (MIT). |
+
+Both pages import the same two modules, so the numbers on the landing page are computed by exactly the code the lab runs — there is no second implementation and no hardcoded copy.
 
 ## Run locally
 

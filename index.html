@@ -2,1057 +2,416 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Schrödinger's Box — quantum observation chamber</title>
-<meta name="description" content="An interactive observation chamber for a cat state: a real Wigner function, six coherent components, decoherence, and a measurement that actually samples the Born rule.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schrödinger's Box — a live phase-space experiment</title>
+<meta name="description" content="She's been in superposition since 2023. A live quantum observation chamber: a real cat state, a real Wigner function, and a measurement that actually samples the Born rule.">
 <meta property="og:title" content="Schrödinger's Box">
-<meta property="og:description" content="She's been in superposition since 2023. Sculpt the state. Observe. Collapse.">
+<meta property="og:description" content="She's been in superposition since 2023. A live phase-space experiment exploring coherence, interference and the moment observation becomes reality.">
 <meta name="theme-color" content="#050403">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@400;500;600&family=Archivo:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#050403; --amber:#ff9d18; --amber-2:#ffb547; --amber-hi:#ffd58a; --ivory:#f2e6c9; --ivory-dim:rgba(242,230,201,.5);
-  --hair:rgba(255,157,24,.22); --hair-2:rgba(255,157,24,.11); --hair-3:rgba(255,157,24,.06); --panel:rgba(8,6,3,.72); --panel-2:rgba(8,6,3,.9);
-  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; --disp:'Barlow Condensed','IBM Plex Mono',sans-serif;
+  --hair:rgba(255,157,24,.22); --hair-2:rgba(255,157,24,.11); --hair-3:rgba(255,157,24,.06);
+  --panel:rgba(8,6,3,.6);
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --disp:'Barlow Condensed','IBM Plex Mono',sans-serif;
+  --head:'Archivo','Barlow Condensed',system-ui,sans-serif;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
-  --colL:322px; --colR:322px;
+  --wrap:1560px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--ivory);font-family:var(--mono);overflow:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
-button,input{font:inherit;color:inherit;background:none;border:0}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible{outline:1px solid var(--amber-2);outline-offset:2px}
-b,strong{font-weight:500}
-.cap{font-family:var(--disp);text-transform:uppercase;letter-spacing:.24em;font-size:11px}
-#app{position:fixed;inset:0;display:grid;grid-template-rows:44px 1fr 96px 42px;grid-template-columns:minmax(0,1fr);padding-top:var(--sat);width:100%;overflow:hidden}
-#app>*{min-width:0}
-/* ---------- rail ---------- */
-.rail{display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--hair-2)}
-.rail h1{font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.3em;color:var(--ivory);display:flex;align-items:center;gap:12px}
-.rail h1::before{content:"";width:8px;height:8px;border:1px solid var(--amber);transform:rotate(45deg)}
-.rail .status{display:flex;align-items:center;gap:0;font-family:var(--disp);font-size:12px;letter-spacing:.24em;color:var(--ivory-dim)}
-.rail .status>*{padding:0 16px;border-left:1px solid var(--hair-2)}
-.rail .status>*:first-child{border-left:0}
-.rail .status strong{color:var(--amber-2)}
-.rail .right{display:flex;gap:10px}
-.rail .right>*{font-family:var(--disp);font-size:11px;letter-spacing:.24em;color:var(--ivory-dim);border:1px solid var(--hair-2);padding:6px 14px;border-radius:2px}
-.rail .right button:hover{color:var(--amber-hi);border-color:var(--hair)}
-/* ---------- main ---------- */
-.main{display:grid;grid-template-columns:var(--colL) minmax(0,1fr) var(--colR);gap:12px;padding:12px 14px 6px;min-height:0}
-.col{display:flex;flex-direction:column;gap:12px;min-height:0}
-/* ---------- panels ---------- */
-.panel{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--hair-2);border-radius:4px;box-shadow:inset 0 1px 0 rgba(255,181,71,.08),0 14px 40px rgba(0,0,0,.45);min-height:0}
-.panel .ph{position:relative;text-align:center;padding:11px 12px;border-bottom:1px solid var(--hair-2);font-family:var(--disp);font-size:12px;letter-spacing:.34em;color:var(--ivory)}
-.panel .ph button{position:absolute;right:10px;top:8px;width:20px;height:20px;color:var(--ivory-dim);font-size:12px}
-.panel .ph button:hover{color:var(--amber-hi)}
-.panel .pb{padding:0 14px;overflow:auto;min-height:0}
-.panel.collapsed .pb,.panel.collapsed .pf,.panel.collapsed .ctabs,.panel.collapsed .wtabs{display:none}
-.pf{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--hair-2);font-family:var(--disp);font-size:11px;letter-spacing:.26em;color:var(--ivory-dim);text-transform:uppercase}
-.pf button{color:inherit;letter-spacing:inherit;font:inherit;text-transform:inherit}
-.pf button:hover{color:var(--amber-hi)}
-.pf .arr{color:var(--amber-2)}
-/* controls */
-#controls{flex:1}
-.ctabs{display:flex;border-bottom:1px solid var(--hair-2)}
-.ctabs button{flex:1;padding:9px 0;font-family:var(--disp);font-size:11.5px;letter-spacing:.22em;color:var(--ivory-dim);border-right:1px solid var(--hair-2);text-transform:uppercase}
-.ctabs button:last-child{border-right:0}
-.ctabs button.on{color:var(--amber-hi);box-shadow:inset 0 -2px 0 var(--amber);background:rgba(255,157,24,.05)}
-.cgroup{display:none}.cgroup.on{display:block}
-.row{display:grid;grid-template-columns:16px 1fr 70px 60px;grid-template-rows:auto auto auto;column-gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--hair-3)}
-.row:last-child{border-bottom:0}
-.row .idx{grid-row:1/4;font-family:var(--disp);font-size:12px;color:var(--ivory-dim);align-self:start;padding-top:2px}
-.row .lab{grid-column:2;grid-row:1;font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory)}
-.row .lab i{font-family:var(--mono);text-transform:none;font-size:12px;color:var(--amber-2);margin-left:6px}
-.row input[type=range]{grid-column:2;grid-row:2;-webkit-appearance:none;appearance:none;width:100%;height:16px;background:transparent;margin:2px 0 0}
-.row .scale{grid-column:2;grid-row:3;display:flex;justify-content:space-between;font-size:10px;color:var(--ivory-dim);margin-top:-2px}
-.row .mg{grid-column:3;grid-row:1/4;width:70px;height:44px;border:1px solid var(--hair-2);background:rgba(0,0,0,.35);display:block}
-.row .val{grid-column:4;grid-row:1/4;height:36px;border:1px solid var(--hair);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:15px;font-weight:500;color:var(--amber-2);background:rgba(0,0,0,.35);letter-spacing:.04em}
-.row .seg{grid-column:3/5;grid-row:1/4;display:flex;gap:6px}
-.row .seg button{flex:1;height:34px;border:1px solid var(--hair);border-radius:2px;font-family:var(--disp);font-size:14px;color:var(--ivory-dim);background:rgba(0,0,0,.35)}
-.row .seg button.on{color:var(--amber-hi);border-color:var(--amber);background:rgba(255,157,24,.12)}
-input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:5px;height:14px;margin-top:-6px;border-radius:1px;background:var(--amber-hi);box-shadow:0 0 0 2px rgba(5,4,3,.9),0 0 10px rgba(255,157,24,.7)}
-input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
-input[type=range]::-moz-range-thumb{width:5px;height:14px;border:0;border-radius:1px;background:var(--amber-hi)}
-/* telemetry */
-.tcard{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;margin:10px 0;padding:10px 12px 9px;border:1px solid var(--hair-2);border-radius:3px;background:rgba(0,0,0,.25);column-gap:12px}
-.tcard .tl{grid-column:1;grid-row:1;font-family:var(--disp);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory)}
-.tcard .tv{grid-column:2;grid-row:1/3;font-family:var(--disp);font-size:26px;font-weight:500;color:var(--amber-2);align-self:center;letter-spacing:.02em}
-.tcard .ts{grid-column:1;grid-row:2;display:flex;align-items:center;gap:8px;margin-top:6px}
-.tcard .ts::before{content:"›";color:var(--ivory-dim);font-size:12px}
-.tcard .ts canvas{width:100%;height:24px;flex:1;display:block}
-.tcard .tc{grid-column:1/3;grid-row:3;display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:6px;font-family:var(--disp);font-size:10px;letter-spacing:.22em;color:var(--ivory-dim);text-transform:uppercase}
-.tcard .blocks{display:flex;gap:2px}
-.tcard .blocks i{width:8px;height:7px;background:var(--hair-2)}
-.tcard .blocks i.on{background:var(--amber);box-shadow:0 0 6px rgba(255,157,24,.6)}
-.tcard .chk{width:11px;height:11px;border:1px solid var(--amber-2);border-radius:50%;position:relative}
-.tcard .chk::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:5px;border:solid var(--amber-2);border-width:0 1px 1px 0;transform:rotate(45deg)}
-.mlogc{margin:0 0 10px;padding:8px 12px 6px;border:1px solid var(--hair-2);border-radius:3px;background:rgba(0,0,0,.25)}
-.log-h{display:flex;justify-content:space-between;font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory)}
-.log-h em{font-style:normal;color:var(--amber-2)}
-.mlog{list-style:none;margin-top:4px;font-size:10.5px}
-.mlog li{display:grid;grid-template-columns:20px 1fr auto;gap:8px;padding:3px 0;border-top:1px solid var(--hair-3);color:var(--ivory-dim)}
-.mlog li b{color:var(--amber-2)}.mlog li i{font-style:normal;color:var(--ivory)}
-.mlog li.empty{grid-template-columns:1fr;color:rgba(242,230,201,.3);font-style:italic}
-/* wigner */
-.wtabs{display:flex;border-bottom:1px solid var(--hair-2)}
-.wtabs button{flex:1;padding:8px 0;font-family:var(--disp);font-size:12px;letter-spacing:.14em;color:var(--ivory-dim);border-right:1px solid var(--hair-2)}
-.wtabs button:last-child{border-right:0}
-.wtabs button.on{color:var(--amber-hi);background:rgba(255,157,24,.06);box-shadow:inset 0 -2px 0 var(--amber)}
-.wig{position:relative;padding:14px 46px 20px 30px}
-#wcan{display:block;width:100%;aspect-ratio:1.18;background:#030201;border:1px solid var(--hair-2)}
-.wig .ax{position:absolute;font-size:10px;color:var(--ivory-dim);font-family:var(--mono)}
-.wig .ax.p{left:12px;top:2px;font-style:italic}.wig .ax.x{right:46px;bottom:5px;font-style:italic}
-.wig .tk{position:absolute;font-size:9.5px;color:var(--ivory-dim)}
-.wig .tk.l1{left:10px;top:16px}.wig .tk.l2{left:14px;top:50%;transform:translateY(-70%)}.wig .tk.l3{left:6px;bottom:22px}
-.wig .tk.b1{left:30px;bottom:5px}.wig .tk.b2{left:50%;bottom:5px;transform:translateX(-30%)}.wig .tk.b3{right:50px;bottom:5px}
-.wbar{position:absolute;right:26px;top:14px;bottom:20px;width:6px;background:linear-gradient(180deg,var(--amber-hi) 0%,var(--amber) 42%,#1a1006 62%,#000 100%);border:1px solid var(--hair-2)}
-.wbar-l{position:absolute;right:2px;font-size:9px;color:var(--ivory-dim)}
-.fockc{padding:8px 14px 12px;border-top:1px solid var(--hair-2)}
-.fock-h{display:flex;justify-content:space-between;font-family:var(--disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory)}
-.fock-h span{color:var(--ivory-dim)}
-.fock{display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:8px;border-bottom:1px solid var(--hair-2)}
-.fock i{flex:1;background:var(--amber);opacity:.85;min-height:1px;transition:height .25s}
-.fock-cap{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ivory-dim);margin-top:3px}
-/* ---------- chamber ---------- */
-#chamber{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 50% 45%,#0c0803 0%,#050403 55%,#030202 100%);touch-action:none;border-radius:4px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ivory);font-family:var(--mono);overflow-x:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:1px solid var(--amber-2);outline-offset:3px}
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 40px}
+.cap{font-family:var(--disp);text-transform:uppercase;letter-spacing:.26em;font-size:11px;color:var(--ivory-dim)}
+/* ---------------- nav ---------------- */
+.nav{position:sticky;top:0;z-index:30;background:rgba(5,4,3,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hair-2);padding-top:var(--sat)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:24px}
+.brand{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.3em;white-space:nowrap}
+.brand::before{content:"";width:9px;height:9px;border:1px solid var(--amber);transform:rotate(45deg);flex:none}
+.nav ul{display:flex;gap:38px;list-style:none}
+.nav ul a{font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim);transition:color .2s}
+.nav ul a:hover{color:var(--amber-hi)}
+.nav .right{display:flex;align-items:center;gap:22px}
+.nav .sys{font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;font-family:var(--disp);font-size:13px;letter-spacing:.26em;text-transform:uppercase;padding:13px 26px;border-radius:2px;border:1px solid var(--hair);color:var(--amber-hi);transition:background .2s,border-color .2s,transform .12s}
+.btn:hover{background:rgba(255,157,24,.1);border-color:var(--amber)}
+.btn:active{transform:translateY(1px)}
+.btn.solid{background:var(--amber);border-color:var(--amber);color:#1a0f02;font-weight:600}
+.btn.solid:hover{background:var(--amber-2);border-color:var(--amber-2)}
+.btn.sm{padding:9px 18px;font-size:11px;letter-spacing:.22em}
+/* ---------------- hero ---------------- */
+.hero{position:relative;padding:34px 0 0}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:48px;align-items:center;min-height:min(76vh,760px)}
+.bk{position:absolute;width:26px;height:26px;pointer-events:none;opacity:.55;z-index:2}
+.bk::before,.bk::after{content:"";position:absolute;background:var(--amber)}
+.bk::before{width:100%;height:1px}.bk::after{width:1px;height:100%}
+.bk.tl{left:0;top:0}.bk.tr{right:0;top:0}.bk.bl{left:0;bottom:0}.bk.br{right:0;bottom:0}
+.bk.tr::before,.bk.br::before{right:0}.bk.tr::after,.bk.br::after{right:0}
+.bk.bl::before,.bk.br::before{bottom:0}.bk.bl::after,.bk.br::after{bottom:0}
+.hero-mark{position:absolute;font-size:10.5px;color:rgba(242,230,201,.32);font-family:var(--mono);letter-spacing:.1em;pointer-events:none}
+.hero-mark.a{left:46px;top:26px}.hero-mark.b{left:46px;bottom:24px}
+.hero-copy{position:relative;z-index:3;padding:20px 0}
+.watermark{position:absolute;left:-8px;top:-40px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:clamp(56px,7vw,104px);color:rgba(255,181,71,.05);pointer-events:none;user-select:none;white-space:nowrap}
+h1{font-family:var(--head);font-weight:800;font-size:clamp(42px,5.1vw,80px);line-height:.99;letter-spacing:-.022em;color:#f6ecd6;max-width:12ch}
+.hero-sub{margin-top:26px;font-size:15px;line-height:1.72;color:var(--ivory-dim);max-width:44ch}
+.hero-cta{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap}
+.hero-note{margin-top:26px;font-size:11px;letter-spacing:.06em;color:rgba(242,230,201,.34)}
+.hero-note b{color:var(--ivory-dim);font-weight:400}
+/* chamber */
+.hero-box{position:relative;height:min(72vh,700px);min-height:400px}
+#chamber{position:absolute;inset:0;border-radius:4px;overflow:hidden;background:radial-gradient(120% 90% at 50% 45%,#0c0803 0%,#050403 55%,#030202 100%);touch-action:pan-y;cursor:grab}
+#chamber:active{cursor:grabbing}
 #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
-.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(90% 80% at 50% 50%,transparent 55%,rgba(0,0,0,.5) 100%)}
-.strip{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;padding:0;border:1px solid var(--hair-2);border-radius:2px;background:rgba(6,5,3,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:var(--disp);font-size:11px;letter-spacing:.2em;color:var(--ivory-dim);white-space:nowrap;pointer-events:none}
-.strip span{padding:6px 14px;border-left:1px solid var(--hair-2)}
-.strip span:first-child{border-left:0}
-.strip b{color:var(--amber-2);font-family:var(--mono);font-size:10.5px;letter-spacing:.04em}
-.axp{position:absolute;left:12px;top:22%;bottom:22%;display:flex;flex-direction:column;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none;text-align:right;width:14px}
-.axp::before{content:"p";font-style:italic;position:absolute;top:-18px;right:0}
-.axz{position:absolute;right:12px;top:40%;bottom:14%;display:flex;flex-direction:column;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none;text-align:left}
-.axz::after{content:"z";font-style:italic;position:absolute;bottom:-18px;left:0}
-.axx{position:absolute;bottom:14px;left:20%;right:20%;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none}
-.axx::after{content:"x";font-style:italic;position:absolute;left:50%;top:14px;transform:translateX(-50%)}
-.callout{position:absolute;font-family:var(--disp);font-size:11px;letter-spacing:.2em;color:var(--ivory);pointer-events:none;text-transform:uppercase}
-.callout small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:none;color:var(--ivory-dim);margin-top:2px}
-.callout i{position:absolute;height:1px;background:linear-gradient(90deg,var(--amber),transparent)}
-.callout::before{content:"";position:absolute;width:5px;height:5px;border:1px solid var(--amber);border-radius:50%;background:rgba(5,4,3,.8)}
-.callout.sv{left:12%;top:16%}.callout.sv::before{left:-2px;top:20px}.callout.sv i{left:4px;top:23px;width:70px;transform:rotate(28deg);transform-origin:left}
-.callout.sp{right:6%;top:32%;text-align:left}.callout.sp::before{left:-16px;top:6px}.callout.sp i{left:-70px;top:9px;width:56px;background:linear-gradient(270deg,var(--amber),transparent)}
-#chamber.is-observed .callout,#chamber.is-observed .strip{opacity:0;transition:opacity .3s}
-.result{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%) scale(.95);opacity:0;pointer-events:none;text-align:center;letter-spacing:.24em;text-transform:uppercase;transition:opacity .35s,transform .35s;background:rgba(5,4,3,.45);padding:14px 26px;border:1px solid var(--hair-2);border-radius:3px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.result.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.result b{display:block;font-family:var(--disp);font-size:44px;font-weight:500;color:var(--amber-hi);text-shadow:0 0 24px rgba(255,157,24,.45);letter-spacing:.38em;margin-left:.38em}
-.result small{display:block;margin-top:6px;font-family:var(--disp);font-size:11px;letter-spacing:.16em;color:var(--ivory-dim)}
-.result .k{display:block;margin-top:10px;font-size:11.5px;color:var(--amber-2);text-transform:none;font-style:italic;letter-spacing:.04em}
-#fallback{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--ivory-dim);font-size:13px;line-height:1.6}
-#fallback img{max-width:60%;opacity:.9;display:block;margin:0 auto 16px}
-.tabs{display:none}
-/* ---------- deck ---------- */
-.deck{display:flex;align-items:stretch;margin:6px 14px 8px;border:1px solid var(--hair-2);border-radius:4px;background:var(--panel);box-shadow:inset 0 1px 0 rgba(255,181,71,.08)}
-.deck>*{border-left:1px solid var(--hair-2);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;min-width:0}
-.deck>*:first-child{border-left:0}
-.deck small{display:block;font-family:var(--disp);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim);margin-top:4px}
-#observe{flex:0 0 300px;justify-content:flex-start;gap:20px;padding:0 22px;margin:8px;border:1px solid var(--hair);border-radius:3px;background:rgba(255,157,24,.06);position:relative;overflow:hidden;text-align:left;box-shadow:inset 0 1px 0 rgba(255,181,71,.16)}
-#observe:hover{background:rgba(255,157,24,.11)}
-#observe .led{width:34px;height:34px;border-radius:50%;border:1px solid var(--amber);position:relative;flex:none;box-shadow:0 0 14px rgba(255,157,24,.35)}
-#observe .led::before{content:"";position:absolute;inset:6px;border-radius:50%;border:1px solid rgba(255,157,24,.5)}
-#observe .led::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
-#observe .ot{font-family:var(--disp);font-size:26px;font-weight:500;letter-spacing:.34em;color:var(--amber-hi);line-height:1}
-#observe .ot small{color:var(--ivory-dim);letter-spacing:.24em;font-size:10px;margin-top:6px}
-#observe .ring{position:absolute;inset:0;pointer-events:none;opacity:0;background:conic-gradient(from 0deg,rgba(255,157,24,0),rgba(255,157,24,.28) 40%,rgba(255,157,24,0) 41%)}
-#observe.arming .ring{opacity:1;animation:arm .45s linear forwards}
-#observe.done .led::after{background:var(--ivory)}
-@keyframes arm{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.deck .tr{flex-direction:column;gap:0;padding:0 8px;flex:0 0 66px}
-.deck .tr button{flex:1;width:100%;font-size:13px;color:var(--amber-2)}
-.deck .tr button+button{border-top:1px solid var(--hair-2)}
-.deck .tr button.on{color:var(--amber-hi)}
-.deck .tc{flex-direction:column;align-items:flex-start;gap:0;flex:0 0 150px}
-.deck .tc em{font-family:var(--disp);font-style:normal;font-size:19px;color:var(--amber-2);font-variant-numeric:tabular-nums;letter-spacing:.04em;white-space:nowrap}
-.deck .st b{white-space:nowrap}
-.deck .wv{flex:1;padding:0 12px;position:relative}
-.deck .wv canvas{width:100%;height:56px;display:block}
-.deck .wv b{position:absolute;top:10px;bottom:10px;width:1px;background:var(--amber-hi);box-shadow:0 0 8px var(--amber);margin-left:12px}
-.deck .st{flex-direction:column;gap:0;flex:0 0 92px}
-.deck .st b{font-family:var(--disp);font-size:19px;color:var(--amber-2)}
-.deck .st b i{font-style:normal;font-size:11px;color:var(--ivory-dim);margin-left:4px}
-.deck .ic{flex-direction:column;gap:0;flex:0 0 92px}
-.deck .ic .g{width:26px;height:26px;border:1px solid var(--amber-2);border-radius:50%;position:relative}
-.deck .ic .g::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--amber-2)}
-.deck .ic .r{width:26px;height:26px;border:1px solid var(--amber-2);border-radius:50%;position:relative}
-.deck .ic .r::after{content:"↺";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--amber-2)}
-.deck .ic .f{width:22px;height:22px;position:relative}
-.deck .ic .f::before,.deck .ic .f::after{content:"";position:absolute;width:7px;height:7px;border:1px solid var(--amber-2)}
-.deck .ic .f::before{left:0;top:0;border-right:0;border-bottom:0}.deck .ic .f::after{right:0;bottom:0;border-left:0;border-top:0}
-.deck .zoom{flex-direction:column;gap:0;flex:0 0 120px}
-.deck .zoom .zb{display:flex;border:1px solid var(--hair);border-radius:2px}
-.deck .zoom .zb button{width:32px;height:26px;font-size:15px;color:var(--amber-2)}
-.deck .zoom .zb span{width:14px;text-align:center;color:var(--ivory-dim);line-height:26px}
-.deck button:hover b,.deck button:hover{color:var(--amber-hi)}
-/* ---------- terminal ---------- */
-.term{position:relative;display:flex;align-items:center;margin:0 14px 10px;border:1px solid var(--hair-2);border-radius:4px;background:var(--panel);font-size:12px;padding-bottom:0}
-.term>*{padding:0 16px;border-left:1px solid var(--hair-2);height:100%;display:flex;align-items:center}
-.term>*:first-child{border-left:0}
-.term .tag{font-family:var(--disp);font-size:11px;letter-spacing:.26em;color:var(--ivory-dim)}
-.term .line{flex:0 0 300px;gap:8px;color:var(--amber-2)}
-.term .line span{color:var(--amber)}
-.term input{flex:1;min-width:0;color:var(--amber-hi);caret-color:var(--amber);background:transparent}
-.term input::placeholder{color:rgba(255,181,71,.35)}
-.term .out{flex:1;color:var(--ivory-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
-.term .out::before{content:"SYSTEM RESPONSE:";font-family:var(--disp);letter-spacing:.22em;color:var(--ivory-dim);margin-right:12px}
-.term .sys{gap:12px;font-family:var(--disp);font-size:11px;letter-spacing:.24em;color:var(--ivory-dim);text-transform:uppercase}
-.term .sys b{color:var(--amber-2)}
-.thist{position:absolute;left:0;right:0;bottom:100%;max-height:0;overflow:hidden;background:var(--panel-2);border:1px solid var(--hair-2);border-bottom:0;border-radius:4px 4px 0 0;padding:0 14px;font-size:11px;color:var(--ivory-dim);transition:max-height .25s,padding .25s;z-index:5;display:block;height:auto}
-.thist.open{max-height:180px;padding:8px 14px}
-.thist div{padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.thist div::before{content:"› ";color:var(--amber)}
-/* ---------- overlays ---------- */
-.overlay{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(3,2,1,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:calc(var(--sat) + 16px) 16px calc(var(--sab) + 16px)}
-.overlay.open{display:flex}
-.sheet{width:min(720px,100%);max-height:100%;overflow:auto;background:var(--panel-2);border:1px solid var(--hair-2);border-radius:4px;padding:24px 28px 28px;font-size:13px;line-height:1.6;-webkit-overflow-scrolling:touch}
-.sheet h2{font-family:var(--disp);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--amber-2);margin:18px 0 8px;font-weight:500}
-.sheet h2:first-child{margin-top:0}
-.sheet p{color:var(--ivory);margin:0 0 10px}
-.sheet p.dim{color:var(--ivory-dim)}
-.sheet blockquote{border-left:2px solid var(--amber);padding:6px 12px;margin:8px 0 12px;color:var(--ivory);font-style:italic}
-.sheet blockquote cite{display:block;font-style:normal;font-size:11px;color:var(--ivory-dim);margin-top:4px;letter-spacing:.06em}
-.sheet a{color:var(--amber-2)}
-.sheet code{color:var(--amber-hi);font-size:12px}
-.sheet .close{position:sticky;top:0;float:right;border:1px solid var(--hair);padding:4px 10px;border-radius:2px;font-family:var(--disp);font-size:11px;letter-spacing:.24em;color:var(--ivory-dim);background:var(--panel-2)}
-.sheet dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:6px 0 10px}
-.sheet dt{color:var(--amber-2);white-space:nowrap}
-.sheet dd{color:var(--ivory-dim)}
-.sheet .tl2 li{list-style:none;display:grid;grid-template-columns:52px 1fr;gap:12px;padding:6px 0;border-bottom:1px solid var(--hair-2)}
-.sheet .tl2 b{color:var(--amber-2);font-weight:500}
-#wigbig canvas{display:block;width:100%;aspect-ratio:1;background:#030201;border:1px solid var(--hair)}
-.wig-read{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--ivory-dim)}
-.wig-read b{color:var(--amber-2);font-weight:500}
-/* ---------- boot ---------- */
-#boot{position:fixed;inset:0;z-index:50;background:#050403;display:flex;align-items:center;justify-content:center;transition:opacity .6s;color:var(--ivory)}
-#boot.done{opacity:0;pointer-events:none}
-.boot-in{width:min(420px,86vw);text-align:center}
-.boot-mark{width:14px;height:14px;border:1px solid var(--amber);transform:rotate(45deg);margin:0 auto 22px;box-shadow:0 0 18px rgba(255,157,24,.5)}
-#boot h1{font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:.42em;margin-left:.42em}
-.boot-sub{font-family:var(--disp);font-size:11px;letter-spacing:.3em;color:var(--ivory-dim);margin:8px 0 26px}
-#bootlog{list-style:none;text-align:left;font-size:11px;color:var(--ivory-dim);min-height:96px}
-#bootlog li{padding:2px 0;opacity:0;animation:fadein .3s forwards}
-#bootlog li::before{content:"› ";color:var(--amber)}
-#bootlog li.ok::after{content:"  ok";color:var(--amber-2)}
-@keyframes fadein{to{opacity:1}}
-.boot-bar{height:1px;background:var(--hair-2);margin-top:14px}
-.boot-bar i{display:block;height:100%;width:0;background:var(--amber);box-shadow:0 0 8px var(--amber);transition:width .4s}
-/* ---------- hidden legacy ids kept for JS ---------- */
-.hid{display:none!important}
-/* ---------- responsive ---------- */
-@media (max-width:1400px){ :root{--colL:292px;--colR:296px} #observe{flex-basis:250px} .deck .tc{flex-basis:150px;padding:0 12px} .deck .st,.deck .ic{flex-basis:78px} .row{grid-template-columns:14px 1fr 56px 54px} .strip{display:none} }
-@media (max-width:1180px){ .callout.sp,.axz{display:none} .deck .ic.orb{display:none} }
-@media (max-width:820px){
-  #app{grid-template-rows:40px 1fr auto auto}
-  .rail{padding:0 10px}.rail h1{font-size:13px}.rail .status{display:none}.rail .right>*{padding:5px 9px;font-size:10px}
-  .main{display:block;padding:8px 8px 4px;position:relative}
-  .col{position:absolute;left:8px;right:8px;bottom:50px;top:auto;display:none;max-height:52vh;z-index:6}
-  .col.open{display:flex}
-  .col .panel{max-height:52vh;overflow:auto;background:var(--panel-2)}
-  .col .panel:not(.open){display:none}
-  #chamber{height:100%}
-  .strip,.callout,.axp,.axz,.axx{display:none}
-  .tabs{display:flex;position:absolute;left:8px;right:8px;bottom:8px;gap:6px;z-index:7}
-  .tabs button{flex:1;min-width:0;padding:8px 0;border:1px solid var(--hair);border-radius:3px;background:var(--panel-2);font-family:var(--disp);font-size:11px;letter-spacing:.18em;color:var(--ivory-dim);text-transform:uppercase}
-  .tabs button.on{color:var(--amber-hi);border-color:var(--amber);background:rgba(255,157,24,.14)}
-  .deck{flex-wrap:wrap;margin:4px 8px;height:auto}
-  #observe{flex:1 1 100%;margin:8px;justify-content:center}
-  .deck .wv,.deck .ic,.deck .zoom{display:none}
-  .deck .tr{flex-direction:row;flex:0 0 auto;height:48px;border-left:0}
-  .deck .tr button+button{border-top:0;border-left:1px solid var(--hair-2)}
-  .deck .tc{flex:1;height:48px}
-  .deck .st{height:48px}
-  .deck>.fsm{display:flex!important;height:48px}
-  .term{margin:0 8px 8px;flex-wrap:wrap;height:auto;padding:0}
-  .term>*{height:36px;padding:0 10px}
-  .term .line{flex:1 1 200px}
-  .term .out{flex:1 1 100%;order:3;border-left:0;border-top:1px solid var(--hair-2);font-size:10px}
-  .term .out::before{margin-right:8px}
-  .term .sys{display:none}
-  .result b{font-size:30px}.result{top:20%;width:90%}
+.cv{position:absolute;inset:0;pointer-events:none;background:radial-gradient(88% 80% at 50% 50%,transparent 55%,rgba(0,0,0,.5) 100%)}
+.axp,.axz{position:absolute;display:flex;flex-direction:column;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none}
+.axp{left:8px;top:20%;bottom:22%;text-align:right;width:16px}
+.axp::before{content:"p";font-style:italic;position:absolute;top:-20px;right:0}
+.axz{right:10px;top:44%;bottom:12%;text-align:left}
+.axz::after{content:"z";font-style:italic;position:absolute;bottom:-19px;left:2px}
+.axx{position:absolute;bottom:12px;left:18%;right:20%;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none}
+.axx::after{content:"x";font-style:italic;position:absolute;left:50%;top:15px;transform:translateX(-50%)}
+.psi{position:absolute;left:16%;top:15%;font-size:13px;color:var(--ivory);pointer-events:none}
+.psi::before{content:"";position:absolute;left:-3px;top:22px;width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.psi i{position:absolute;left:4px;top:24px;width:64px;height:1px;background:linear-gradient(90deg,var(--amber),transparent);transform:rotate(26deg);transform-origin:left}
+.wig-inset{position:absolute;right:7%;top:11%;width:150px;pointer-events:none}
+.wig-inset .t{font-size:11px;color:var(--ivory);text-align:center;margin-bottom:6px}
+.wig-inset canvas{display:block;width:100%;aspect-ratio:1;border:1px solid var(--hair-2);background:#030201}
+.wig-inset .lg{position:absolute;right:-13px;top:26px;bottom:2px;width:4px;border:1px solid var(--hair-2);background:linear-gradient(180deg,var(--amber-hi) 0%,var(--amber) 42%,#1a1006 62%,#000 100%)}
+.hint-r{position:absolute;right:5%;bottom:19%;display:flex;align-items:center;gap:12px;font-family:var(--disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim);pointer-events:none}
+.hint-r .orb{width:26px;height:14px;border:1px solid var(--amber-2);border-radius:50%;position:relative;flex:none}
+.hint-r .orb::after{content:"";position:absolute;left:-2px;top:4px;width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.hint-r.b{bottom:11%}
+.hint-r .ring{width:20px;height:20px;border:1px solid var(--amber-2);border-radius:50%;position:relative;flex:none}
+.hint-r .ring::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid var(--amber-2)}
+.loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--disp);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ivory-dim);transition:opacity .5s}
+.loading.done{opacity:0}
+/* ---------------- stat bar ---------------- */
+.stats{margin-top:30px;border-top:1px solid var(--hair-2);border-bottom:1px solid var(--hair-2)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr) auto;align-items:center}
+.stat{padding:26px 34px;border-left:1px solid var(--hair-2)}
+.stat:first-child{border-left:0;padding-left:0}
+.stat b{display:block;font-family:var(--disp);font-weight:500;font-size:34px;letter-spacing:.02em;color:var(--amber-2);line-height:1}
+.stat.plain b{color:var(--ivory)}
+.stat span{display:block;margin-top:9px;font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.stats a.more{padding:26px 0 26px 34px;border-left:1px solid var(--hair-2);font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2);white-space:nowrap}
+.stats a.more:hover{color:var(--amber-hi)}
+/* ---------------- sections ---------------- */
+section{padding:110px 0;border-bottom:1px solid var(--hair-3)}
+.sec-h{display:flex;align-items:baseline;gap:20px;margin-bottom:52px}
+.sec-h em{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--amber);letter-spacing:.1em}
+.sec-h h2{font-family:var(--head);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.012em;color:#f6ecd6}
+.sec-h p{margin-left:auto;max-width:38ch;font-size:13.5px;line-height:1.7;color:var(--ivory-dim)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.card{background:var(--bg);padding:34px 30px 36px}
+.card .n{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em}
+.card h3{margin:16px 0 12px;font-family:var(--disp);font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory)}
+.card p{font-size:13.5px;line-height:1.75;color:var(--ivory-dim)}
+.card .eq{margin-top:18px;padding:12px 14px;border:1px solid var(--hair-2);border-radius:2px;font-size:12px;color:var(--amber-2);overflow-x:auto;white-space:nowrap}
+/* field notes */
+.notes{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:start}
+blockquote{border-left:2px solid var(--amber);padding:8px 0 8px 26px;font-size:clamp(17px,1.7vw,23px);line-height:1.5;color:var(--ivory);font-style:italic}
+blockquote cite{display:block;margin-top:16px;font-style:normal;font-family:var(--disp);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-dim)}
+blockquote cite a{color:var(--amber-2)}
+.notes p{margin-top:24px;font-size:14px;line-height:1.8;color:var(--ivory-dim)}
+.tline{list-style:none}
+.tline li{display:grid;grid-template-columns:66px 1fr;gap:22px;padding:17px 0;border-top:1px solid var(--hair-2);font-size:13.5px;line-height:1.65;color:var(--ivory-dim)}
+.tline li:last-child{border-bottom:1px solid var(--hair-2)}
+.tline b{font-family:var(--disp);font-size:17px;color:var(--amber-2);letter-spacing:.06em}
+.tline li.now{color:var(--ivory)}
+/* methodology */
+.meth{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.meth>div{background:var(--bg);padding:32px 30px}
+.meth h3{font-family:var(--disp);font-size:13px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:20px}
+.meth h3.ok{color:var(--amber-2)}.meth h3.no{color:var(--ivory-dim)}
+.meth ul{list-style:none;font-size:13.5px;line-height:1.7}
+.meth li{padding:11px 0 11px 24px;border-top:1px solid var(--hair-3);position:relative;color:var(--ivory-dim)}
+.meth li:first-child{border-top:0}
+.meth li::before{position:absolute;left:0;top:11px;font-size:12px}
+.meth .ok+ul li::before{content:"✓";color:var(--amber)}
+.meth .no+ul li::before{content:"·";color:var(--ivory-dim);left:4px}
+.meth li b{color:var(--ivory);font-weight:500}
+.paper{margin-top:44px;padding:32px 34px;border:1px solid var(--hair-2);border-radius:3px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.paper .cap{margin-bottom:12px}
+.paper h4{font-family:var(--head);font-weight:600;font-size:19px;line-height:1.4;color:var(--ivory);max-width:52ch}
+.paper p{margin-top:12px;font-size:13px;color:var(--ivory-dim);line-height:1.7;max-width:62ch}
+/* footer cta */
+.fcta{padding:120px 0 110px;text-align:center;border-bottom:1px solid var(--hair-3)}
+.fcta h2{font-family:var(--head);font-weight:800;font-size:clamp(32px,4.4vw,62px);letter-spacing:-.02em;line-height:1.03;color:#f6ecd6}
+.fcta p{margin:22px auto 40px;max-width:50ch;font-size:14.5px;line-height:1.75;color:var(--ivory-dim)}
+footer{padding:40px 0 calc(40px + var(--sab));display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+footer .cap{font-size:10.5px}
+footer a:hover{color:var(--amber-hi)}
+/* reveal */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){ .rv{opacity:1;transform:none;transition:none} html{scroll-behavior:auto} }
+/* ---------------- responsive ---------------- */
+@media (max-width:1240px){
+  .wrap{padding:0 28px}
+  .nav ul{gap:24px}
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:24px}
+  .hero-box{height:min(58vh,540px)}
+  .watermark{top:-26px}
+  .notes{grid-template-columns:1fr;gap:44px}
+  .stats .wrap{grid-template-columns:repeat(2,1fr)}
+  .stat{padding:20px 24px}
+  .stat:nth-child(odd){border-left:0;padding-left:0}
+  .stat:nth-child(n+3){border-top:1px solid var(--hair-2)}
+  .stats a.more{grid-column:1/-1;border-left:0;border-top:1px solid var(--hair-2);padding:20px 0}
 }
-.col{overflow:hidden}
-#telemetry{flex:0 0 auto}
-#wigner{flex:1 1 auto;min-height:0;overflow:hidden}
-#wigner .wig{flex:0 1 auto;min-height:0}
-#wcan{aspect-ratio:1.42}
-.tcard{margin:8px 0;padding:8px 12px 7px}
-.tcard .tv{font-size:24px}
-.tcard .ts canvas{height:18px}
-.tcard .tc{margin-top:4px}
-.mlogc{margin-bottom:8px}
-@media (max-height:900px){ .tcard{margin:7px 0;padding:7px 12px 6px} .tcard .tv{font-size:22px} .tcard .ts canvas{height:14px} .fock{height:24px} #wcan{aspect-ratio:1.55} .wig{padding:10px 46px 18px 30px} }
-@media (max-height:820px){ .mlogc{display:none} .fock-cap{display:none} .tcard .ts{display:none} .tcard{grid-template-rows:auto auto;row-gap:2px} .tcard .tl{align-self:center} .tcard .tv{grid-row:1;grid-column:2} .tcard .tc{grid-row:2;grid-column:1/3;justify-content:space-between;margin-top:2px} #wcan{aspect-ratio:1.7} }
-@media (prefers-reduced-motion:reduce){ #observe.arming .ring{animation:none;opacity:.5} }
+@media (max-width:900px){
+  .nav ul{display:none}
+  .grid3,.meth{grid-template-columns:1fr}
+  .paper{grid-template-columns:1fr;gap:22px}
+  section{padding:76px 0}
+  .sec-h{flex-direction:column;gap:14px;margin-bottom:34px}
+  .sec-h p{margin-left:0}
+}
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .nav .wrap{height:60px}
+  .nav .sys{display:none}
+  .brand{font-size:14px;letter-spacing:.24em}
+  .hero{padding:22px 0 0}
+  .hero .wrap{min-height:0}
+  .hero-box{height:min(52vh,430px);min-height:320px}
+  .wig-inset{width:96px;right:4%;top:8%}
+  .wig-inset .lg{display:none}
+  .psi{left:8%}
+  .axz,.axx{display:none}
+  .hint-r{font-size:10px;letter-spacing:.16em;right:4%}
+  .hero-cta .btn{flex:1 1 100%}
+  .stat b{font-size:27px}
+  .bk{width:18px;height:18px}
+  .hero-mark{display:none}
+}
 </style>
 </head>
 <body>
-<div id="app">
-  <header class="rail">
-    <h1>SCHRÖDINGER'S BOX</h1>
-    <div class="status"><span>LIVE</span><span><span id="fps">60</span> FPS</span><strong id="coh">COHERENT</strong></div>
-    <div class="right"><button id="aboutBtn" aria-label="About this experiment">ABOUT</button><span>OXFORD · PRX 2026</span></div>
-  </header>
 
-  <div class="main">
-    <!-- ================= LEFT: CONTROLS ================= -->
-    <div class="col" id="colL">
-      <aside class="panel" id="controls">
-        <div class="ph"><span>CONTROLS</span><button data-collapse aria-label="Collapse controls">⌃</button></div>
-        <div class="ctabs" id="ctabs"><button class="on" data-g="basic">Basic</button><button data-g="field">Field</button><button data-g="env">Environment</button></div>
-        <div class="pb">
-          <div class="cgroup on" data-g="basic">
-            <label class="row"><span class="idx">1</span><span class="lab">Separation <i>α</i></span><input type="range" id="sep" min="0" max="10" step="0.05" value="3.2" aria-label="Separation alpha"><span class="scale"><span>0</span><span>10</span></span><canvas class="mg" id="mg-sep" width="140" height="88"></canvas><output class="val" id="v-sep">3.200</output></label>
-            <label class="row"><span class="idx">2</span><span class="lab">Squeeze <i>r</i></span><input type="range" id="sq" min="-3" max="3" step="0.05" value="0.75" aria-label="Squeeze r"><span class="scale"><span>−3</span><span>3</span></span><canvas class="mg" id="mg-sq" width="140" height="88"></canvas><output class="val" id="v-sq">0.750</output></label>
-            <label class="row"><span class="idx">3</span><span class="lab">Phase <i>φ</i></span><input type="range" id="ph" min="0" max="3.1416" step="0.001" value="0.785" aria-label="Phase phi"><span class="scale"><span>0</span><span>π</span></span><canvas class="mg" id="mg-ph" width="140" height="88"></canvas><output class="val" id="v-ph">0.785</output></label>
-            <div class="row"><span class="idx">4</span><span class="lab">Components</span><span class="seg" id="comps" role="group" aria-label="Number of coherent components"><button data-n="2">2</button><button data-n="3">3</button><button data-n="6" class="on">6</button></span></div>
-            <label class="row"><span class="idx">5</span><span class="lab">Decoherence <i>κ</i></span><input type="range" id="ka" min="0" max="1" step="0.005" value="0.02" aria-label="Decoherence kappa"><span class="scale"><span>0</span><span>1</span></span><canvas class="mg" id="mg-ka" width="140" height="88"></canvas><output class="val" id="v-ka">0.020</output></label>
-          </div>
-          <div class="cgroup" data-g="field">
-            <label class="row"><span class="idx">1</span><span class="lab">Field gain</span><input type="range" id="f-gain" min="0.3" max="1.8" step="0.05" value="1" aria-label="Particle field gain"><span class="scale"><span>0.3</span><span>1.8</span></span><canvas class="mg" id="mg-gain" width="140" height="88"></canvas><output class="val" id="v-gain">1.00</output></label>
-            <label class="row"><span class="idx">2</span><span class="lab">Scan rate</span><input type="range" id="f-scan" min="0" max="2" step="0.05" value="0.5" aria-label="Scan plane speed"><span class="scale"><span>0</span><span>2</span></span><canvas class="mg" id="mg-scan" width="140" height="88"></canvas><output class="val" id="v-scan">0.50</output></label>
-            <label class="row"><span class="idx">3</span><span class="lab">Echo depth</span><input type="range" id="f-echo" min="0" max="2" step="0.05" value="0.75" aria-label="Temporal echo depth"><span class="scale"><span>0</span><span>2</span></span><canvas class="mg" id="mg-echo" width="140" height="88"></canvas><output class="val" id="v-echo">0.75</output></label>
-            <label class="row"><span class="idx">4</span><span class="lab">Ring drift</span><input type="range" id="f-ring" min="0" max="0.4" step="0.01" value="0.12" aria-label="Wavefront ring speed"><span class="scale"><span>0</span><span>0.4</span></span><canvas class="mg" id="mg-ring" width="140" height="88"></canvas><output class="val" id="v-ring">0.12</output></label>
-          </div>
-          <div class="cgroup" data-g="env">
-            <label class="row"><span class="idx">1</span><span class="lab">Bloom</span><input type="range" id="e-bloom" min="0" max="1" step="0.02" value="0.42" aria-label="Bloom strength"><span class="scale"><span>0</span><span>1</span></span><canvas class="mg" id="mg-bloom" width="140" height="88"></canvas><output class="val" id="v-bloom">0.42</output></label>
-            <label class="row"><span class="idx">2</span><span class="lab">Grain</span><input type="range" id="e-grain" min="0" max="0.12" step="0.005" value="0.045" aria-label="Film grain"><span class="scale"><span>0</span><span>0.12</span></span><canvas class="mg" id="mg-grain" width="140" height="88"></canvas><output class="val" id="v-grain">0.045</output></label>
-            <label class="row"><span class="idx">3</span><span class="lab">Grid</span><input type="range" id="e-grid" min="0" max="2" step="0.05" value="1" aria-label="Chamber grid brightness"><span class="scale"><span>0</span><span>2</span></span><canvas class="mg" id="mg-grid" width="140" height="88"></canvas><output class="val" id="v-grid">1.00</output></label>
-            <label class="row"><span class="idx">4</span><span class="lab">Reflection</span><input type="range" id="e-refl" min="0" max="2" step="0.05" value="1" aria-label="Floor reflection"><span class="scale"><span>0</span><span>2</span></span><canvas class="mg" id="mg-refl" width="140" height="88"></canvas><output class="val" id="v-refl">1.00</output></label>
-          </div>
-        </div>
-        <div class="pf"><button id="advBtn">Advanced options</button><span class="arr">›</span></div>
-      </aside>
-    </div>
-
-    <!-- ================= CENTRE: CHAMBER (unchanged scene) ================= -->
-    <section id="chamber" aria-label="Interactive quantum observation chamber">
-      <canvas id="gl"></canvas>
-      <div class="vignette"></div>
-      <div id="fallback"><div><img src="assets/quantum-cat.png" alt=""><p>WebGL is unavailable in this browser, so the chamber cannot render.<br>The physics panels still work.</p></div></div>
-      <div class="strip" id="strip"><span>CHAMBER 01</span><span>|ψ⟩=cat(α=<b id="s-a">3.20</b>, n=<b id="s-n">6</b>)</span><span>r=<b id="s-r">0.75</b></span><span>φ=<b id="s-p">0.785</b></span><span>κ=<b id="s-k">0.020</b></span><span>DPR=<b id="s-dpr">1.5</b></span><span>BLOOM <b id="s-bloom">ON</b></span></div>
-      <div class="axp"><span>3</span><span>2</span><span>1</span><span>0</span><span>−1</span><span>−2</span><span>−3</span></div>
-      <div class="axz"><span>3</span><span>2</span><span>1</span><span>0</span><span>−1</span><span>−2</span><span>−3</span></div>
-      <div class="axx"><span>−3</span><span>−2</span><span>−1</span><span>0</span><span>1</span><span>2</span><span>3</span></div>
-      <div class="callout sv">State vector |ψ⟩<i></i></div>
-      <div class="callout sp">Superposition<small>P(x) = ∫W dp</small><i></i></div>
-      <div class="tabs" id="tabs"><button data-tab="controls">Controls</button><button data-tab="telemetry">Telemetry</button><button data-tab="wigner">Wigner</button></div>
-      <div class="result" id="result" aria-live="polite"><b id="r-title">Alive</b><small id="r-sub">branch 3 of 6 · x = +2.14</small><span class="k" id="r-k"></span></div>
-    </section>
-
-    <!-- ================= RIGHT: TELEMETRY + WIGNER ================= -->
-    <div class="col" id="colR">
-      <aside class="panel" id="telemetry">
-        <div class="ph"><span>TELEMETRY</span><button data-collapse aria-label="Collapse telemetry">⌃</button></div>
-        <div class="pb">
-          <div class="tcard"><span class="tl">Negativity</span><span class="tv" id="t-neg">−0.312</span><span class="ts"><canvas id="sp-neg" width="240" height="48"></canvas></span><span class="tc"><span id="c-neg-l">High confidence</span><span class="blocks" id="c-neg"><i></i><i></i><i></i><i></i><i></i></span><span class="chk"></span></span></div>
-          <div class="tcard"><span class="tl">Purity</span><span class="tv" id="t-pur">0.984</span><span class="ts"><canvas id="sp-pur" width="240" height="48"></canvas></span><span class="tc"><span id="c-pur-l">High confidence</span><span class="blocks" id="c-pur"><i></i><i></i><i></i><i></i><i></i></span><span class="chk"></span></span></div>
-          <div class="tcard"><span class="tl">Fidelity</span><span class="tv" id="t-fid">0.997</span><span class="ts"><canvas id="sp-fid" width="240" height="48"></canvas></span><span class="tc"><span id="c-fid-l">High confidence</span><span class="blocks" id="c-fid"><i></i><i></i><i></i><i></i><i></i></span><span class="chk"></span></span></div>
-          <div class="mlogc"><div class="log-h">Measurement log <em id="mlog-n">0</em></div><ul id="mlog" class="mlog"><li class="empty">no observations yet</li></ul></div>
-          <span class="hid" id="t-n"></span><span class="hid" id="t-par"></span><span class="hid" id="t-wmin"></span><span class="hid" id="t-grid"></span><span class="hid" id="t-nmax"></span><span class="hid" id="m-pur"></span>
-        </div>
-      </aside>
-      <aside class="panel" id="wigner">
-        <div class="ph"><span>WIGNER W(<i>x</i>,<i>p</i>)</span><button data-collapse aria-label="Collapse Wigner plot">⌃</button></div>
-        <div class="wtabs" id="wtabs"><button class="on" data-w="w">W(x,p)</button><button data-w="px">P(x)</button><button data-w="pp">P(p)</button></div>
-        <div class="wig">
-          <canvas id="wcan" width="256" height="216" aria-label="Wigner phase-space distribution"></canvas>
-          <span class="ax p">p</span><span class="ax x">x</span>
-          <span class="tk l1" id="wk-top">3</span><span class="tk l2">0</span><span class="tk l3" id="wk-bot">−3</span>
-          <span class="tk b1" id="wk-l">−3</span><span class="tk b2">0</span><span class="tk b3" id="wk-r">3</span>
-          <div class="wbar"></div><span class="wbar-l" style="top:12px">1.0</span><span class="wbar-l" style="top:50%">0</span><span class="wbar-l" style="bottom:18px">−1.0</span>
-        </div>
-        <div class="fockc"><div class="fock-h"><span id="fock-title">Even-only Fock distribution</span><span id="fock-meta">⟨n⟩ 10.24 · Π +1</span></div><div class="fock" id="fock"></div><div class="fock-cap"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span><span>30</span></div></div>
-        <div class="pf hid"><button id="expandBtn">Expand</button><span class="arr">›</span></div>
-      </aside>
-    </div>
-  </div>
-
-  <!-- ================= DECK ================= -->
-  <div class="deck">
-    <button id="observe" aria-label="Observe and collapse the quantum state"><span class="led"></span><span class="ot"><span id="obsLabel">Observe</span><small id="obsSub">Measurement ready</small></span><i class="ring"></i></button>
-    <div class="tr"><button id="play" aria-label="Pause simulation" class="on">▶</button><button id="pause" aria-label="Pause">❚❚</button></div>
-    <div class="tc"><em id="tcode">t = 07:16.320</em><small>Time elapsed</small></div>
-    <div class="wv"><canvas id="wave" width="900" height="56" aria-hidden="true"></canvas><b id="tknob"></b><i id="tfill" class="hid"></i></div>
-    <button class="st" id="speed"><b><span id="speedv">1.0</span>x <i>⌃⌄</i></b><small>Speed</small></button>
-    <button class="ic orb" id="orbit"><span class="g"></span><small>Orbit</small></button>
-    <div class="zoom"><span class="zb"><button id="zoomOut" aria-label="Zoom out">−</button><span>·</span><button id="zoomIn" aria-label="Zoom in">+</button></span><small>Zoom</small></div>
-    <button class="ic" id="resetBtn"><span class="r"></span><small>Reset</small></button>
-    <button class="ic fsm" id="fs" aria-label="Toggle fullscreen"><span class="f"></span><small>Fullscreen</small></button>
-  </div>
-
-  <!-- ================= TERMINAL ================= -->
-  <div class="term">
-    <div class="thist" id="thist"></div>
-    <span class="tag">TERMINAL</span>
-    <div class="line"><span>&gt;</span><input id="cmd" placeholder="wigner(1.2, 0)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command terminal"></div>
-    <div class="out" id="out">ready — |ψ⟩ prepared. every number on this page is computed from it. type help</div>
-    <div class="sys"><span>System status</span><b id="sys">COHERENT</b></div>
-  </div>
-</div>
-
-<div id="boot" aria-hidden="true"><div class="boot-in"><div class="boot-mark"></div><h1>SCHRÖDINGER'S BOX</h1><p class="boot-sub">QUANTUM OBSERVATION CHAMBER · OXFORD PRX 2026</p><ol id="bootlog"></ol><div class="boot-bar"><i id="bootfill"></i></div></div></div>
-
-<div class="overlay" id="about">
-  <div class="sheet">
-    <button class="close" data-close>CLOSE</button>
-    <h2>The premise</h2>
-    <blockquote>I tried liking our cat, but the feeling wasn't reciprocated. Not even slightly. One day she disappeared. To this day, we don't know if our cat (Schrödinger), is alive or dead.<cite>Elon Musk, 17 Sep 2023 · x.com/elonmusk/status/1703330562356957232</cite></blockquote>
-    <p>Schrödinger the cat has been in an unresolved state since 2023. This chamber is a place to keep her there, look at the state honestly, and — when you're ready — collapse it.</p>
-    <h2>The physics is real</h2>
-    <p>The state in the box is a <b>coherent-state cat</b>: an equal superposition of <i>N</i> coherent states |α<sub>k</sub>⟩ arranged on a ring in phase space (α<sub>k</sub> = α·e<sup>i(2πk/N+φ)</sup>). Everything you see in the Wigner panel and telemetry is computed from that state vector — nothing is typed in.</p>
-    <dl>
-      <dt>Wigner W(x,p)</dt><dd>Evaluated on a 96×96 grid from the closed-form overlap of coherent-state pairs. Interference fringes and negative regions appear because the cross terms ⟨α<sub>j</sub>|α<sub>k</sub>⟩ are kept.</dd>
-      <dt>Negativity</dt><dd>Volume of the negative part of W: ∫(|W|−W)/2 dx dp, times 2π. Zero for anything classical.</dd>
-      <dt>Purity</dt><dd>Tr ρ² = 2π ∫W² dx dp. Drops from 1 as coherences decay.</dd>
-      <dt>Fidelity</dt><dd>Overlap of the current (decohered) state with the pure cat: 2π ∫ W·W<sub>pure</sub> dx dp.</dd>
-      <dt>Squeeze r</dt><dd>Applies S(r) to the whole state, which is exactly a canonical rescaling of phase space: W(x,p) → W(x·e<sup>r</sup>, p·e<sup>−r</sup>).</dd>
-      <dt>Phase φ</dt><dd>Rotates the ring. When the clock runs, the state also rotates under free evolution H = ħωa<sup>†</sup>a — that slow turn is time.</dd>
-      <dt>Decoherence κ</dt><dd>Damps the off-diagonal terms by e<sup>−0.15κ·|α<sub>j</sub>−α<sub>k</sub>|²</sup> — the standard result for photon loss, where the fringes between distant branches die first.</dd>
-      <dt>Observe</dt><dd>Draws one sample from the actual marginal P(x)=∫W dp, then reports the branch that sample belongs to. Odd branches read <b>alive</b>, even read <b>dead</b>. Repeat 200 times and the histogram converges to P(x). It is not <code>Math.random()</code> over two labels.</dd>
-    </dl>
-    <p class="dim">The 3D chamber is illustrative: the point-cloud cat is seeded from a generated image and its copies are placed by the same α, φ, N and κ. Every readout is real; the cat is a picture of the readouts.</p>
-    <h2>The paper</h2>
-    <p>Oxford's trapped-ion group built superpositions whose components are <i>themselves</i> non-classical — squeezed, trisqueezed and quadsqueezed motional states — using a mid-circuit measurement to project the ion's motion into the shape they wanted. The reconstructed Wigner function shows sixfold symmetry and regions of negativity: proof of a genuine superposition, not a mixture.</p>
-    <blockquote>This approach gave us a tool to sculpt the quantum superposition into almost any shape.<cite>Sebastian Saner · Saner, Băzăvan, Webb, Araneda, Lucas, Ballance, Srinivas — <a href="https://journals.aps.org/prx/" target="_blank" rel="noopener">Phys. Rev. X 16, 021049 (2026)</a></cite></blockquote>
-    <h2>Timeline</h2>
-    <ul class="tl2">
-      <li><b>1935</b><span>Schrödinger publishes the cat as a reductio against naive superposition.</span></li>
-      <li><b>1996</b><span>Monroe, Meekhof, King &amp; Wineland make the first "Schrödinger cat" of a single trapped ion.</span></li>
-      <li><b>2018</b><span>Musk: "a big dog called Gatsby, a little dog called Marvin the Martian &amp; a cat named Schrödinger."</span></li>
-      <li><b>2023</b><span>"To this day, we don't know if our cat (Schrödinger), is alive or dead."</span></li>
-      <li><b>2026</b><span>Oxford: a new family of cat states built from non-classical components. PRX, June.</span></li>
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">SCHRÖDINGER'S BOX</a>
+    <ul>
+      <li><a href="#experiment">The experiment</a></li>
+      <li><a href="#notes">Field notes</a></li>
+      <li><a href="#methodology">Methodology</a></li>
     </ul>
-    <h2>Terminal</h2>
-    <p class="dim">Type <code>help</code>. The state is also on <code>window.__PSI</code>.</p>
+    <div class="right">
+      <span class="sys">System online</span>
+      <a class="btn sm" href="lab.html">Enter lab</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <i class="bk tl"></i><i class="bk tr"></i><i class="bk bl"></i><i class="bk br"></i>
+    <span class="hero-mark a">X: −3.0</span><span class="hero-mark b">Y: 2.0</span>
+
+    <div class="hero-copy">
+      <span class="watermark">W(x, p)</span>
+      <h1>She's been in superposition since 2023.</h1>
+      <p class="hero-sub">A live phase-space experiment exploring coherence, interference and the moment observation becomes reality.</p>
+      <div class="hero-cta">
+        <a class="btn solid" href="lab.html">Enter the chamber <span aria-hidden="true">→</span></a>
+        <a class="btn" href="https://journals.aps.org/prx/" target="_blank" rel="noopener">Read the paper</a>
+      </div>
+      <p class="hero-note"><b>WebGL 2.0</b> · Runs in your browser · No signup</p>
+    </div>
+
+    <div class="hero-box">
+      <div id="chamber" aria-label="Live quantum observation chamber">
+        <canvas id="gl"></canvas>
+        <div class="cv"></div>
+        <div class="loading" id="loading">Initialising chamber</div>
+        <div class="axp"><span>3</span><span>2</span><span>1</span><span>0</span><span>−1</span><span>−2</span></div>
+        <div class="axz"><span>−3</span><span>−2</span><span>−1</span><span>0</span></div>
+        <div class="axx"><span>−3</span><span>−2</span><span>−1</span><span>0</span><span>1</span><span>2</span><span>3</span></div>
+        <div class="psi">|ψ⟩<i></i></div>
+        <div class="wig-inset"><div class="t">W(x, p)</div><canvas id="wig" width="200" height="200"></canvas><span class="lg"></span></div>
+        <div class="hint-r"><span class="orb"></span>Drag to rotate</div>
+        <div class="hint-r b"><span class="ring"></span>Unobserved / coherent</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat plain"><b id="k-n">06</b><span>Components</span></div>
+    <div class="stat"><b id="k-pur">0.984</b><span>Purity</span></div>
+    <div class="stat"><b id="k-neg">−0.312</b><span>Negativity</span></div>
+    <div class="stat plain"><b id="k-t">30:00</b><span>Observation window</span></div>
+    <a class="more" href="lab.html">View live telemetry <span aria-hidden="true">→</span></a>
   </div>
 </div>
 
-<div class="overlay" id="wigbig">
-  <div class="sheet" style="width:min(560px,100%)">
-    <button class="close" data-close>CLOSE</button>
-    <h2>Wigner W(x,p) — full resolution</h2>
-    <canvas id="wbig" width="512" height="512" aria-label="Large Wigner plot"></canvas>
-    <div class="wig-read"><span>tap/hover to read</span><b id="wread">W(0.00, 0.00) = —</b></div>
-    <p class="dim" style="margin-top:10px">Warm = positive. Dark = negative. Negative regions cannot exist for any classical probability distribution; they are the certificate that this is a superposition and not a mixture.</p>
+<main>
+<section id="experiment">
+  <div class="wrap">
+    <div class="sec-h rv"><em>01</em><h2>The experiment</h2><p>Not an animation of a cat state — an actual one, evaluated on a grid every frame and drawn from the numbers it produces.</p></div>
+    <div class="grid3 rv">
+      <div class="card">
+        <span class="n">01 / STATE</span>
+        <h3>A real cat state</h3>
+        <p>The chamber holds an equal superposition of <em>N</em> coherent states arranged on a ring in phase space. Separation, squeeze, phase and the number of components are yours to set; the state is rebuilt from them.</p>
+        <div class="eq">|ψ⟩ = 𝒩 · S(r) · Σₖ |α e^(i(2πk/N + φ))⟩</div>
+      </div>
+      <div class="card">
+        <span class="n">02 / EVIDENCE</span>
+        <h3>Wigner negativity</h3>
+        <p>The distribution over phase space is computed on a 96×96 grid, cross terms kept. Where it goes negative, no classical probability distribution can follow it. That negativity is the proof the box holds a superposition and not a mixture.</p>
+        <div class="eq">∫<sub>W&lt;0</sub> |W| d²β &nbsp;→&nbsp; 1/π for a two-lobe cat</div>
+      </div>
+      <div class="card">
+        <span class="n">03 / COLLAPSE</span>
+        <h3>Measurement, honestly</h3>
+        <p>Pressing observe draws one sample from the marginal P(x) — the real distribution, not a coin flip over two labels. Repeat it two hundred times and the histogram converges to the curve it came from.</p>
+        <div class="eq">x ~ P(x) = ∫ W(x,p) dp</div>
+      </div>
+    </div>
   </div>
-</div>
+</section>
+
+<section id="notes">
+  <div class="wrap">
+    <div class="sec-h rv"><em>02</em><h2>Field notes</h2><p>Why this cat, and why 2023.</p></div>
+    <div class="notes">
+      <div class="rv">
+        <blockquote>I tried liking our cat, but the feeling wasn't reciprocated. Not even slightly. One day she disappeared. To this day, we don't know if our cat (Schrödinger), is alive or dead.
+          <cite>Elon Musk · 17 Sep 2023 · <a href="https://x.com/elonmusk/status/1703330562356957232" target="_blank" rel="noopener">x.com</a></cite>
+        </blockquote>
+        <p>A cat named Schrödinger walked off and never resolved. It is the only Schrödinger's cat anyone has actually had to live with — an unresolved state with a name, a food bowl and a household that stopped waiting.</p>
+        <p>Three years later, a group in Oxford showed that the thought experiment had been too modest all along. A superposition does not have to be two of the same thing in two places. Its parts can be things with no classical version at all. The box was never a question with two answers.</p>
+      </div>
+      <ul class="tline rv">
+        <li><b>1935</b><span>Schrödinger publishes the cat — as an argument against taking superposition literally.</span></li>
+        <li><b>1996</b><span>Monroe, Meekhof, King &amp; Wineland build the first real cat state from a single trapped ion.</span></li>
+        <li><b>2018</b><span>"We have a big dog called Gatsby, a little dog called Marvin the Martian &amp; a cat named Schrödinger."</span></li>
+        <li><b>2023</b><span>She disappears. State unresolved.</span></li>
+        <li class="now"><b>2026</b><span>Oxford builds cat states whose components are themselves non-classical — squeezed, trisqueezed, quadsqueezed. Sixfold symmetry, Wigner negativity confirmed.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="methodology">
+  <div class="wrap">
+    <div class="sec-h rv"><em>03</em><h2>Methodology</h2><p>What is computed and what is drawn. The line between them is the whole point.</p></div>
+    <div class="meth rv">
+      <div>
+        <h3 class="ok">Computed from the state</h3>
+        <ul>
+          <li><b>Wigner function</b> — 96×96 grid (72² on phones), closed-form coherent-state overlaps, cross terms kept.</li>
+          <li><b>Negativity, purity, fidelity</b> — numerical integrals over that grid. A two-component cat returns 0.3175; the textbook value is 1/π = 0.318.</li>
+          <li><b>Photon statistics</b> — ⟨n⟩, parity and P(n) from the Fock amplitudes.</li>
+          <li><b>Decoherence</b> — coherences damped by the photon-loss form, so distant branches lose their fringes first.</li>
+          <li><b>Observation</b> — a Born-rule sample from P(x), logged and histogrammed.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="no">Illustrative</h3>
+        <ul>
+          <li><b>The cat</b> — a generated 3D mesh rendered as a hologram: wireframe, Fresnel shell, and particles sampled from its surface.</li>
+          <li><b>Its copies</b> — placed by the same α, φ, N and κ that drive the physics, but they are a picture of the state, not the state.</li>
+          <li><b>Breathing, head and tail motion</b> — procedural. The model has no rig.</li>
+          <li><b>The chamber</b> — grids, scan plane and wavefront rings are scene dressing.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="paper rv">
+      <div>
+        <div class="cap">The paper</div>
+        <h4>Generating Arbitrary Superpositions of Nonclassical Quantum Harmonic Oscillator States</h4>
+        <p>S. Saner, O. Băzăvan, D. J. Webb, G. Araneda, D. M. Lucas, C. J. Ballance, R. Srinivas — <em>Phys. Rev. X</em> <b>16</b>, 021049 (2026). A single trapped strontium ion, a mid-circuit measurement, and a superposition sculpted into a shape nobody had made before. “This approach gave us a tool to sculpt the quantum superposition into almost any shape.”</p>
+      </div>
+      <a class="btn" href="https://journals.aps.org/prx/" target="_blank" rel="noopener">Read it</a>
+    </div>
+  </div>
+</section>
+
+<section class="fcta">
+  <div class="wrap">
+    <h2 class="rv">Open the box.</h2>
+    <p class="rv">Sculpt the state, watch the fringes, and decide when to look. The instrument has every number this page is quoting — and the one control that ends the superposition.</p>
+    <div class="hero-cta rv" style="justify-content:center">
+      <a class="btn solid" href="lab.html">Enter the chamber <span aria-hidden="true">→</span></a>
+      <a class="btn" href="https://github.com/steveindustries90/schrodingers-box" target="_blank" rel="noopener">Source on GitHub</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <span class="cap">Schrödinger's Box · MIT licensed · Physics real, cat illustrative</span>
+    <span class="cap"><a href="lab.html">Lab</a> · <a href="https://github.com/steveindustries90/schrodingers-box" target="_blank" rel="noopener">GitHub</a> · <a href="https://journals.aps.org/prx/" target="_blank" rel="noopener">PRX 16, 021049</a></span>
+  </div>
+</footer>
 
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from './vendor/GLTFLoader.js';
-import { MeshSurfaceSampler } from './vendor/MeshSurfaceSampler.js';
-import { EffectComposer } from './vendor/postprocessing/EffectComposer.js';
-import { RenderPass } from './vendor/postprocessing/RenderPass.js';
-import { ShaderPass } from './vendor/postprocessing/ShaderPass.js';
-import { UnrealBloomPass } from './vendor/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from './vendor/postprocessing/OutputPass.js';
+import { S, M, reduced, computeWigner, paintWigner } from './js/physics.js';
+import { initGL, resize, buildCatGLB, buildCatPNG, updateScene, attachPointer, gl } from './js/chamber.js';
 
-/* ======================================================================
-   0. State
-   ====================================================================== */
-const S = {
-  sep:3.2, sq:0.75, ph:0.785, N:6, ka:0.02,
-  running:true, speed:1, zoom:1, t:436.32, tau:0,        // t = display clock (s), tau = physical phase time
-  observed:false, collapse:0, keep:2, obsHist:[],
-  pointer:{x:0,y:0}, drag:null, orbitAuto:true, orbit:{th:0,phi:0}, quality:1,
-  gain:1, scanRate:0.5, echo:0.75, ringRate:0.12, bloom:0.42, grain:0.045, grid:1, refl:1,
-};
-const INITIAL={sep:3.2,sq:0.75,ph:0.785,N:6,ka:0.02};
 const $ = id=>document.getElementById(id);
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const isMobile = matchMedia('(max-width: 820px)').matches;
-
-/* ======================================================================
-   1. Physics — coherent-state cat, Wigner function, metrics
-   ====================================================================== */
-const G = isMobile ? 72 : 96;                          // grid
-const W = new Float32Array(G*G), Wp = new Float32Array(G*G);
-let wRange = 6, wMin = 0, wMax = 0;
-const M = { neg:0, pur:1, fid:1, n:0, par:1, wmin:0, Pn:new Float32Array(32) };
-
-// α_k on the ring
-function alphas(N, sep, ph){ const a=[]; for(let k=0;k<N;k++){ const th=ph+2*Math.PI*k/N; a.push([sep*Math.cos(th), sep*Math.sin(th)]); } return a; }
-
-// Compute W on grid. Pure cat + damped cat share the same term structure; cross terms get factor D_jk.
-function computeWigner(){
-  const N=S.N, al=alphas(N,S.sep,S.ph);
-  const er = Math.exp(S.sq*0.5), ei = 1/er;            // squeeze mapping (r scaled for on-screen sanity)
-  wRange = Math.max(3.2, S.sep*Math.SQRT2*Math.max(er,ei)+2.4);   // ring radius √2·α, stretched by squeeze, plus lobe width
-  // normalisation: Σ_jk <α_k|α_j> D_jk
-  const ov=(j,k)=>{ const [ar,ai]=al[j],[br,bi]=al[k]; const re=-(ar*ar+ai*ai)/2-(br*br+bi*bi)/2+ (br*ar+bi*ai); const im=(br*ai-bi*ar); return [Math.exp(re)*Math.cos(im), Math.exp(re)*Math.sin(im)]; }; // <α_k|α_j> = exp(-|a|²/2-|b|²/2 + b*·a) with b=α_k
-  const damp=(j,k)=>{ if(j===k) return 1; const [ar,ai]=al[j],[br,bi]=al[k]; const d2=(ar-br)**2+(ai-bi)**2; return Math.exp(-S.ka*d2*0.15); };   // photon-loss form: distant branches lose coherence first
-  let Zp=0, Zd=0;
-  for(let j=0;j<N;j++)for(let k=0;k<N;k++){ const [re]=ov(j,k); Zp+=re; Zd+=re*damp(j,k); }
-  const twoPi=2/Math.PI;
-  wMin=Infinity; wMax=-Infinity;
-  const dx=(2*wRange)/(G-1);
-  for(let iy=0;iy<G;iy++){
-    const p0=(wRange-iy*dx);
-    for(let ix=0;ix<G;ix++){
-      const x0=(-wRange+ix*dx);
-      // apply squeeze as coordinate rescale
-      const x=x0*er, p=p0*ei;
-      // β = (x+ip)/√2 in coherent-state units
-      const br=x/Math.SQRT2, bi=p/Math.SQRT2;
-      let sumP=0, sumD=0;
-      for(let j=0;j<N;j++){
-        const [ajr,aji]=al[j];
-        const ujr=ajr-br, uji=aji-bi;
-        for(let k=0;k<N;k++){
-          const [akr,aki]=al[k];
-          const ukr=akr-br, uki=aki-bi;
-          // e^{i(θj-θk)} exp(-|u_k|²/2 - |u_j|²/2 - u_k* u_j)
-          const thj=br*aji-bi*ajr, thk=br*aki-bi*akr;    // Im(β* α)
-          const cre=-(ukr*ukr+uki*uki)/2-(ujr*ujr+uji*uji)/2-(ukr*ujr+uki*uji);
-          const cim=(thj-thk)-(ukr*uji-uki*ujr);
-          const val=Math.exp(cre)*Math.cos(cim);
-          sumP+=val; sumD+=val*damp(j,k);
-        }
-      }
-      const wp=twoPi*sumP/Zp, wd=twoPi*sumD/Zd;
-      const i=iy*G+ix; Wp[i]=wp; W[i]=wd;
-      if(wd<wMin)wMin=wd; if(wd>wMax)wMax=wd;
-    }
-  }
-  // metrics. W is normalised so ∫W d²β = 1 with β=(x+ip)/√2 → d²β = dx dp / 2.
-  // Tr ρ² = π ∫ W² d²β ; F(ρ,ρ_pure) = π ∫ W W_pure d²β ; negativity = ∫_{W<0} |W| d²β
-  const dA=dx*dx/2;
-  let neg=0,pur=0,fid=0;
-  for(let i=0;i<G*G;i++){ const w=W[i]; if(w<0)neg-=w; pur+=w*w; fid+=w*Wp[i]; }
-  M.neg=-neg*dA; M.pur=Math.min(1,pur*dA*Math.PI); M.fid=Math.min(1,fid*dA*Math.PI);
-  { let mass=0; for(let i=0;i<G*G;i++) mass+=W[i]; M.mass=Math.max(0,Math.min(1,mass*dA)); const fringe=Math.PI/(2*Math.SQRT2*Math.max(S.sep,0.15)); M.res=Math.max(0,Math.min(1,(fringe/dx)/2.2)); }
-  M.wmin=wMin;
-  // lobe height (W at α_0) — used to scale the colormap so the ring stays visible under the centre fringes
-  { const [ar,ai]=al[0]; M.lobe=Math.abs(wAt(Math.SQRT2*ar/er, Math.SQRT2*ai*er)); }
-  // photon statistics of the (pure) cat: ψ_n ∝ Σ_k α_k^n e^{-|α|²/2}/√n!
-  const a2=S.sep*S.sep; let tot=0, mean=0, par=0;
-  const lnf=[0]; for(let n=1;n<64;n++) lnf[n]=lnf[n-1]+Math.log(n);
-  const P=[]; for(let n=0;n<64;n++){ let re=0,im=0; for(let k=0;k<N;k++){ const th=S.ph+2*Math.PI*k/N; const mag=Math.exp(n*Math.log(Math.max(S.sep,1e-9))-a2/2-lnf[n]/2); re+=mag*Math.cos(n*th); im+=mag*Math.sin(n*th);} const pn=re*re+im*im; P.push(pn); tot+=pn; }
-  for(let n=0;n<64;n++){ const pn=P[n]/tot; if(n<32)M.Pn[n]=pn; mean+=n*pn; par+=(n%2?-1:1)*pn; }
-  M.n=mean; M.par=par;
-}
-// evaluate W at an arbitrary point (for terminal + hover), bilinear on grid
-function wAt(x,p){ const dx=(2*wRange)/(G-1); const fx=(x+wRange)/dx, fy=(wRange-p)/dx; if(fx<0||fy<0||fx>G-1||fy>G-1) return 0; const x0=Math.floor(fx),y0=Math.floor(fy),x1=Math.min(G-1,x0+1),y1=Math.min(G-1,y0+1),tx=fx-x0,ty=fy-y0; const a=W[y0*G+x0],b=W[y0*G+x1],c=W[y1*G+x0],d=W[y1*G+x1]; return (a*(1-tx)+b*tx)*(1-ty)+(c*(1-tx)+d*tx)*ty; }
-// sample x from marginal P(x)=∫W dp (Born rule)
-function sampleX(){ const dx=(2*wRange)/(G-1); const Px=new Float64Array(G); let tot=0; for(let ix=0;ix<G;ix++){ let s=0; for(let iy=0;iy<G;iy++) s+=Math.max(0,W[iy*G+ix]); Px[ix]=s; tot+=s; } let r=Math.random()*tot; for(let ix=0;ix<G;ix++){ r-=Px[ix]; if(r<=0) return -wRange+ix*dx+ (Math.random()-.5)*dx; } return 0; }
-// which branch does x belong to → nearest α_k real part (in x units √2·Re α · e^{-r/2})
-function nearestBranch(x){ const al=alphas(S.N,S.sep,S.ph); const er=Math.exp(S.sq*0.5); let best=0,bd=Infinity; al.forEach(([ar],k)=>{ const xk=Math.SQRT2*ar/er; const d=Math.abs(xk-x); if(d<bd){bd=d;best=k;} }); return best; }
-
-/* ======================================================================
-   2. Wigner rendering (small panel + big)
-   ====================================================================== */
-const wcan=$('wcan'), wctx=wcan.getContext('2d'), wbig=$('wbig'), bctx=wbig.getContext('2d');
-const wimg=wctx.createImageData(G,G);
-function colormap(v){ // v in [-1,1] normalised by max|W|
-  if(v>=0){ const t=Math.pow(v,.75); return [Math.round(20+235*t), Math.round(10+160*Math.pow(t,1.15)), Math.round(4+70*Math.pow(t,1.8))]; }
-  const t=Math.pow(-v,.7); return [Math.round(6+40*t), Math.round(4+18*t), Math.round(8+70*t)]; // negative: dark violet-black
-}
-const offc=document.createElement('canvas'); offc.width=G; offc.height=G; const offx=offc.getContext('2d');
-function drawWigner(){
-  // scale to the lobe height (clamped) so the ring of components reads even when centre fringes are N× taller
-  const mx=Math.max(1e-6, Math.max(M.lobe*1.15, Math.max(wMax,-wMin)*0.3));
-  const d=wimg.data;
-  for(let i=0;i<G*G;i++){ const [r,g,b]=colormap(Math.max(-1,Math.min(1,W[i]/mx))); d[i*4]=r; d[i*4+1]=g; d[i*4+2]=b; d[i*4+3]=255; }
-  offx.putImageData(wimg,0,0);
-  const paint=(ctx,w,h,grid)=>{
-    ctx.imageSmoothingEnabled=true; ctx.clearRect(0,0,w,h);
-    ctx.drawImage(offc,0,0,w,h);
-    ctx.strokeStyle='rgba(255,157,24,.16)'; ctx.lineWidth=1;
-    for(let i=1;i<grid;i++){ const x=Math.round(i*w/grid)+.5, y=Math.round(i*h/grid)+.5; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-    ctx.strokeStyle='rgba(255,181,71,.55)'; ctx.beginPath(); ctx.moveTo(w/2+.5,0); ctx.lineTo(w/2+.5,h); ctx.moveTo(0,h/2+.5); ctx.lineTo(w,h/2+.5); ctx.stroke();
-    ctx.fillStyle='rgba(242,230,201,.6)'; ctx.font='10px IBM Plex Mono, monospace';
-    const lab=wRange.toFixed(0); ctx.fillText('−'+lab,3,h-3); ctx.fillText('+'+lab,w-22,h-3);
-  };
-  if(wMode==='w') paint(wctx,wcan.width,wcan.height,8); else paintMarginal(wctx,wcan.width,wcan.height,wMode);
-  if($('wigbig').classList.contains('open')) paint(bctx,wbig.width,wbig.height,12);
-}
-let wMode='w';
-function paintMarginal(ctx,w,h,mode){
-  const dx=(2*wRange)/(G-1); const P=new Float64Array(G); let mx=1e-9;
-  for(let i=0;i<G;i++){ let s2=0; for(let j=0;j<G;j++) s2+=(mode==='px'? W[j*G+i] : W[i*G+j]); P[i]=Math.max(0,s2*dx); if(P[i]>mx) mx=P[i]; }
-  ctx.clearRect(0,0,w,h); ctx.fillStyle='#030201'; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(255,157,24,.14)'; for(let i=1;i<8;i++){ const x=Math.round(i*w/8)+.5; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-  ctx.beginPath(); for(let i=0;i<G;i++){ const idx=mode==='px'?i:(G-1-i); const px=i/(G-1)*w, py=h-4-(P[idx]/mx)*(h-14); i?ctx.lineTo(px,py):ctx.moveTo(px,py); }
-  ctx.strokeStyle='rgba(255,213,138,.95)'; ctx.lineWidth=1.4; ctx.stroke();
-  const lg=ctx.createLinearGradient(0,0,0,h); lg.addColorStop(0,'rgba(255,157,24,.45)'); lg.addColorStop(1,'rgba(255,157,24,0)'); ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath(); ctx.fillStyle=lg; ctx.fill();
-  ctx.fillStyle='rgba(242,230,201,.6)'; ctx.font='10px IBM Plex Mono, monospace'; ctx.fillText((mode==='px'?'P(x) = ∫W dp':'P(p) = ∫W dx'),6,12); ctx.fillText('−'+wRange.toFixed(0),3,h-3); ctx.fillText('+'+wRange.toFixed(0),w-22,h-3);
-}
-$('wtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; wMode=b.dataset.w; [...$('wtabs').children].forEach(x=>x.classList.toggle('on',x===b)); drawWigner(); });
-function conf(id,v){ const el=$(id); if(!el) return; const n=Math.round(Math.max(0,Math.min(1,v))*5); [...el.children].forEach((b,i)=>b.classList.toggle('on',i<n)); const l=$(id+'-l'); if(l) l.textContent=v>=.9?'High confidence':v>=.6?'Medium confidence':'Low confidence'; }
-function updateTelemetry(){
-  conf('c-neg',M.mass); conf('c-pur',M.res); conf('c-fid',Math.min(M.mass,M.res));
-  const ft=$('fock-title'); if(ft) ft.textContent=S.N===2?'Even-only Fock distribution':`n ≡ 0 (mod ${S.N}) Fock distribution`; const fm=$('fock-meta'); if(fm) fm.textContent=`⟨n⟩ ${M.n.toFixed(2)} · Π ${M.par>=0?'+':'−'}${Math.abs(M.par).toFixed(2)}`;
-  $('t-neg').textContent=(M.neg<0?'−':'')+Math.abs(M.neg).toFixed(3);
-  $('t-pur').textContent=M.pur.toFixed(3);
-  $('t-fid').textContent=M.fid.toFixed(3);
-  $('t-n').textContent=M.n.toFixed(2);
-  $('t-par').textContent=(M.par>=0?'+':'−')+Math.abs(M.par).toFixed(3);
-  $('t-wmin').textContent=(M.wmin<0?'−':'')+Math.abs(M.wmin).toFixed(2);
-  $('t-grid').textContent=G+'²';
-  const f=$('fock'); if(!f.children.length){ for(let i=0;i<32;i++) f.appendChild(document.createElement('i')); }
-  let mx=1e-9; for(let i=0;i<32;i++) mx=Math.max(mx,M.Pn[i]);
-  for(let i=0;i<32;i++) f.children[i].style.height=Math.max(1,Math.round(30*M.Pn[i]/mx))+'px';
-}
-let wDirty=true; const HIST={neg:[],pur:[],fid:[]};
-function sparkOne(id,a){ const c=$(id); if(!c) return; const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); if(a.length<2) return; const mx=Math.max(1e-6,...a.map(Math.abs)); x.strokeStyle='rgba(255,157,24,.25)'; x.beginPath(); x.moveTo(0,h-1); x.lineTo(w,h-1); x.stroke(); x.beginPath(); a.forEach((v,i)=>{ const px=i/(a.length-1)*w, py=h-2-(Math.abs(v)/mx)*(h-6); i?x.lineTo(px,py):x.moveTo(px,py); }); x.strokeStyle='rgba(255,181,71,.9)'; x.lineWidth=1.4; x.stroke(); }
-function drawSpark(){ sparkOne('sp-neg',HIST.neg); sparkOne('sp-pur',HIST.pur); sparkOne('sp-fid',HIST.fid); }
-// mini-graphs beside each control: real cross-sections of the current state
-function miniPlot(id,fn,n=48,opts={}){ const c=$(id); if(!c||c.offsetParent===null&&!opts.force) return; const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); x.strokeStyle='rgba(255,157,24,.12)'; for(let i=1;i<4;i++){ x.beginPath(); x.moveTo(i*w/4+.5,0); x.lineTo(i*w/4+.5,h); x.stroke(); } x.beginPath(); x.moveTo(0,h/2+.5); x.lineTo(w,h/2+.5); x.stroke(); const ys=[]; for(let i=0;i<n;i++) ys.push(fn(i/(n-1))); let mx=1e-9,mn=1e9; ys.forEach(v=>{ mx=Math.max(mx,v); mn=Math.min(mn,v); }); const span=Math.max(1e-9,mx-mn); const zero=opts.signed; x.beginPath(); ys.forEach((v,i)=>{ const px=i/(n-1)*w, py=zero? h/2-(v/Math.max(Math.abs(mx),Math.abs(mn),1e-9))*(h/2-6) : h-6-((v-mn)/span)*(h-12); i?x.lineTo(px,py):x.moveTo(px,py); }); x.strokeStyle='rgba(255,213,138,.95)'; x.lineWidth=1.6; x.stroke(); if(opts.marker!=null){ const px=opts.marker*w; x.fillStyle='rgba(255,157,24,.9)'; x.fillRect(px-1,0,2,h); } }
-function drawMinis(){
-  const dx=(2*wRange)/(G-1);
-  miniPlot('mg-sep',t=>{ const x=-wRange+t*2*wRange; let s2=0; for(let j=0;j<G;j++) s2+=Math.max(0,W[j*G+Math.round(t*(G-1))]); return s2; });                       // P(x)
-  miniPlot('mg-sq',t=>{ let s2=0; const j=Math.round((1-t)*(G-1)); for(let i=0;i<G;i++) s2+=Math.max(0,W[j*G+i]); return s2; });                                          // P(p)
-  miniPlot('mg-ph',t=>{ const th=t*2*Math.PI; const er=Math.exp(S.sq*0.5); return wAt(Math.SQRT2*S.sep*Math.cos(th)/er, Math.SQRT2*S.sep*Math.sin(th)*er); },64,{signed:true});   // W around the ring
-  miniPlot('mg-ka',t=>Math.exp(-S.ka*0.15*Math.pow(t*2*S.sep,2)),48,{marker:null});                                                                                       // coherence vs branch distance
-  miniPlot('mg-gain',t=>Math.pow(t,1/S.gain));
-  miniPlot('mg-scan',t=>Math.sin(t*Math.PI*2*(0.5+S.scanRate)),48,{signed:true});
-  miniPlot('mg-echo',t=>Math.pow(0.22,t*3)*Math.exp(-t*S.echo));
-  miniPlot('mg-ring',t=>Math.max(0,Math.sin(t*Math.PI*8*(0.3+S.ringRate*3))),64);
-  miniPlot('mg-bloom',t=>Math.exp(-Math.pow((t-.5)*6/(0.4+S.bloom),2)));
-  miniPlot('mg-grain',t=>((Math.sin(t*997.3)*43758.5)%1)*S.grain*8+0.5,64);
-  miniPlot('mg-grid',t=>Math.abs(Math.sin(t*Math.PI*6))*S.grid,64);
-  miniPlot('mg-refl',t=>t<.5?1:Math.max(0,S.refl*(1-(t-.5)*2)),48);
-}
-function drawWave(){ const c=$('wave'); if(!c) return; const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const j=Math.round((G-1)/2); let mx=1e-9; for(let i=0;i<G;i++) mx=Math.max(mx,Math.abs(W[j*G+i])); x.strokeStyle='rgba(255,157,24,.18)'; x.beginPath(); x.moveTo(0,h/2+.5); x.lineTo(w,h/2+.5); x.stroke(); const cols=Math.min(w/2,180); for(let k=0;k<cols;k++){ const i=Math.round(k/(cols-1)*(G-1)); const v=W[j*G+i]/mx; const px=k/(cols-1)*w; const a=Math.abs(v)*(h/2-3); x.strokeStyle=v>=0?'rgba(255,181,71,.85)':'rgba(255,120,30,.55)'; x.lineWidth=2; x.beginPath(); x.moveTo(px,h/2-a); x.lineTo(px,h/2+a); x.stroke(); } x.fillStyle='rgba(242,230,201,.45)'; x.font='10px IBM Plex Mono'; x.fillText('W(x, p=0)',6,11); }
-function refreshPhysics(){ computeWigner(); drawWigner(); updateTelemetry(); HIST.neg.push(M.neg); HIST.pur.push(M.pur); HIST.fid.push(M.fid); if(HIST.neg.length>60){HIST.neg.shift();HIST.pur.shift();HIST.fid.shift();} drawSpark(); drawMinis(); drawWave(); const wr=wRange.toFixed(0); ['wk-top','wk-r'].forEach(id=>{ const e=$(id); if(e) e.textContent=wr; }); ['wk-bot','wk-l'].forEach(id=>{ const e=$(id); if(e) e.textContent='−'+wr; }); wDirty=false; }
-
-/* ======================================================================
-   3. Three.js chamber
-   ====================================================================== */
 const chamber=$('chamber'), glc=$('gl');
-let renderer=null, scene, camera, cat, motes, scanPlane, scanEdge, rings=[], flash, catMat, motesMat, ringsGroup, frames;
-let composer=null, bloomPass=null, filmPass=null, catRefl=null, reflGroup=null;
-const AMBER=new THREE.Color('#ff9d18'), AMBER2=new THREE.Color('#ffb547'), AMBERHI=new THREE.Color('#ffd58a');
-function glowTexture(){ const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d'); const g=x.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(255,220,160,1)'); g.addColorStop(.25,'rgba(255,157,24,.55)'); g.addColorStop(.6,'rgba(255,120,10,.12)'); g.addColorStop(1,'rgba(255,100,0,0)'); x.fillStyle=g; x.fillRect(0,0,128,128); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; }
 
-const gridMats=[];
-function lines(points, color, opacity){ const g=new THREE.BufferGeometry().setFromPoints(points); const m=new THREE.LineBasicMaterial({color, transparent:true, opacity, blending:THREE.AdditiveBlending, depthWrite:false}); m.userData.base=opacity; gridMats.push(m); return new THREE.LineSegments(g,m); }
-function buildChamber(){
-  const HW=4.2, HH=2.6, HD=4.2, step=.6;
-  const grid=[], gridBright=[];
-  // floor
-  for(let x=-HW;x<=HW+1e-6;x+=step){ grid.push(new THREE.Vector3(x,-HH,-HD), new THREE.Vector3(x,-HH,HD)); }
-  for(let z=-HD;z<=HD+1e-6;z+=step){ grid.push(new THREE.Vector3(-HW,-HH,z), new THREE.Vector3(HW,-HH,z)); }
-  // ceiling
-  for(let x=-HW;x<=HW+1e-6;x+=step){ grid.push(new THREE.Vector3(x,HH,-HD), new THREE.Vector3(x,HH,HD)); }
-  for(let z=-HD;z<=HD+1e-6;z+=step){ grid.push(new THREE.Vector3(-HW,HH,z), new THREE.Vector3(HW,HH,z)); }
-  // back wall
-  for(let x=-HW;x<=HW+1e-6;x+=step){ grid.push(new THREE.Vector3(x,-HH,-HD), new THREE.Vector3(x,HH,-HD)); }
-  for(let y=-HH;y<=HH+1e-6;y+=step){ grid.push(new THREE.Vector3(-HW,y,-HD), new THREE.Vector3(HW,y,-HD)); }
-  // side walls
-  for(let z=-HD;z<=HD+1e-6;z+=step){ grid.push(new THREE.Vector3(-HW,-HH,z), new THREE.Vector3(-HW,HH,z), new THREE.Vector3(HW,-HH,z), new THREE.Vector3(HW,HH,z)); }
-  for(let y=-HH;y<=HH+1e-6;y+=step){ grid.push(new THREE.Vector3(-HW,y,-HD), new THREE.Vector3(-HW,y,HD), new THREE.Vector3(HW,y,-HD), new THREE.Vector3(HW,y,HD)); }
-  // box edges bright
-  const c=[[-HW,-HH,-HD],[HW,-HH,-HD],[HW,HH,-HD],[-HW,HH,-HD],[-HW,-HH,HD],[HW,-HH,HD],[HW,HH,HD],[-HW,HH,HD]].map(a=>new THREE.Vector3(...a));
-  const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-  E.forEach(([a,b])=>gridBright.push(c[a],c[b]));
-  scene.add(lines(grid,AMBER,.10));
-  scene.add(lines(gridBright,AMBER2,.55));
-  // nested time frames (receding rectangles)
-  frames=new THREE.Group();
-  for(let i=1;i<=6;i++){ const z=-HD+i*(HD*2/7); const w=HW*(1-i*.02), h=HH*(1-i*.02); const pts=[new THREE.Vector3(-w,-h,z),new THREE.Vector3(w,-h,z),new THREE.Vector3(w,-h,z),new THREE.Vector3(w,h,z),new THREE.Vector3(w,h,z),new THREE.Vector3(-w,h,z),new THREE.Vector3(-w,h,z),new THREE.Vector3(-w,-h,z)]; const l=lines(pts,AMBER,.10+ (i===3?.15:0)); frames.add(l); }
-  scene.add(frames);
-  // floor rings
-  ringsGroup=new THREE.Group();
-  for(let i=0;i<9;i++){ const pts=[]; for(let a=0;a<=64;a++){ const th=a/64*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(th),0,Math.sin(th))); } const g=new THREE.BufferGeometry().setFromPoints(pts); const m=new THREE.LineBasicMaterial({color:AMBER,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}); const r=new THREE.Line(g,m); r.position.y=-HH+.01; ringsGroup.add(r); rings.push(r); }
-  scene.add(ringsGroup);
-  // scan plane
-  scanPlane=new THREE.Mesh(new THREE.PlaneGeometry(HW*2,HD*2), new THREE.MeshBasicMaterial({color:AMBER,transparent:true,opacity:.045,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  scanPlane.rotation.x=-Math.PI/2; scene.add(scanPlane);
-  const ep=[new THREE.Vector3(-HW,0,-HD),new THREE.Vector3(HW,0,-HD),new THREE.Vector3(HW,0,-HD),new THREE.Vector3(HW,0,HD),new THREE.Vector3(HW,0,HD),new THREE.Vector3(-HW,0,HD),new THREE.Vector3(-HW,0,HD),new THREE.Vector3(-HW,0,-HD)];
-  scanEdge=lines(ep,AMBERHI,.5); scene.add(scanEdge);
-  // flash sprite
-  flash=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(),color:AMBERHI,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})); flash.scale.set(9,9,1); flash.position.set(0,-.2,0); scene.add(flash);
-  // ambient glow under cat
-  const under=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(),color:AMBER,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false})); under.scale.set(7,3.2,1); under.position.set(0,-HH+.2,0); scene.add(under);
+/* landing preset: calmer, wider framing, no observe */
+S.orbitAuto=true; S.zoom=1; S.grain=0.038; S.bloom=0.42;
+
+/* ---- scroll reveals ---- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.14});
+document.querySelectorAll('.rv').forEach((el,i)=>{ el.style.transitionDelay=(i%3)*70+'ms'; io.observe(el); });
+
+/* ---- only render while the hero is on screen ---- */
+let visible=true;
+new IntersectionObserver(es=>{ visible=es[0].isIntersecting; },{threshold:.02}).observe(chamber);
+
+/* ---- physics refresh + stat bar ---- */
+let wDirty=true;
+function refresh(){
+  computeWigner();
+  paintWigner($('wig'),{grid:4});
+  $('k-neg').textContent=(M.neg<0?'−':'')+Math.abs(M.neg).toFixed(3);
+  $('k-pur').textContent=M.pur.toFixed(3);
+  $('k-n').textContent=String(S.N).padStart(2,'0');
+  wDirty=false;
 }
 
-const CAT_VS=`
-attribute float aSize; attribute float aCopy; attribute float aRand; attribute vec3 aColor;
-uniform float uTime,uSep,uPhase,uComp,uKappa,uCollapse,uSqueeze,uPix,uKeep,uFloor,uScanY,uGain,uEcho,uRefl;
-varying float vA; varying vec3 vC;
-void main(){
-  float k=aCopy, N=uComp;
-  float show=step(k, N-0.5);
-  // copy 0 = the present: crisp, centred. copies 1..N-1 = temporal ghosts fanning out +/- and receding in z.
-  float rank=ceil(k*0.5);                       // 0,1,1,2,2,3
-  float side=mod(k,2.0)*2.0-1.0;                // alternate sides
-  float dist=rank;
-  float off=rank*side*(0.25+uSep*0.20);
-  vec3 p=position;
-  p.x*=exp(-0.10*uSqueeze); p.y=(p.y-uFloor)*exp(0.10*uSqueeze)+uFloor;
-  float ph=uPhase*2.0 + k*1.0472;
-  float shim=0.014*(1.0+uKappa*6.0);
-  p+=shim*vec3(sin(uTime*1.7+aRand*40.0+ph), cos(uTime*1.3+aRand*30.0+ph), sin(uTime*2.1+aRand*20.0));
-  // decoherence dispersion (grows with kappa)
-  vec3 dir=vec3(sin(aRand*97.0),cos(aRand*71.0),sin(aRand*53.0));
-  p+=dir*uKappa*0.9*(0.3+0.7*fract(aRand*13.7));
-  // slow breathing of the ghosts = phase-space rotation made visible
-  float breathe=0.08*sin(uTime*0.6+k*1.3)*rank*side;
-  vec3 world=p+vec3(off+breathe,0.0,-rank*uEcho);
-  // collapse: ghosts converge onto the present; only the kept branch survives
-  vec3 target=p*(1.0+0.02*sin(uTime*30.0+aRand*10.0)*uCollapse);
-  world=mix(world,target,smoothstep(0.0,1.0,uCollapse));
-  vec4 mv=modelViewMatrix*vec4(world,1.0);
-  gl_Position=projectionMatrix*mv;
-  float base=pow(0.22, dist);
-  float keep=1.0-step(0.5,abs(k-uKeep));
-  float a=mix(base, keep, uCollapse);
-  a*= (1.0-uKappa*0.35);
-  float scan=exp(-pow((world.y-uScanY)*2.5,2.0));
-  vA=show*a*(1.0+0.9*scan)*uGain;
-#ifdef REFL
-  vA*=0.20*uRefl*clamp(1.0-(world.y-uFloor)*0.30,0.0,1.0);
-#endif
-  vC=aColor;
-  gl_PointSize=aSize*uPix*(9.5/max(0.5,-mv.z))*(1.0+0.3*uCollapse*keep+0.4*scan);
-}`;
-const CAT_FS=`
-precision highp float; varying float vA; varying vec3 vC;
-void main(){ vec2 q=gl_PointCoord-0.5; float d=length(q); if(d>0.5) discard; float a=smoothstep(0.5,0.22,d); float core=smoothstep(0.28,0.0,d); vec3 col=vC*(0.7+0.5*a)+vec3(1.0,0.9,0.7)*core*0.35; gl_FragColor=vec4(col, (a*0.6+core*0.45)*vA); }`;
-
-async function buildCatPNG(){
-  const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src='assets/quantum-cat.png'; });
-  const SZ=isMobile?160:220; const c=document.createElement('canvas'); c.width=c.height=SZ; const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(img,0,0,SZ,SZ); const d=x.getImageData(0,0,SZ,SZ).data;
-  const target=isMobile?4200:9800; const cand=[];
-  for(let py=0;py<SZ;py++)for(let px=0;px<SZ;px++){ const i=(py*SZ+px)*4; const a=d[i+3]; if(a<40) continue; const lum=(d[i]*.5+d[i+1]*.4+d[i+2]*.1)/255; if(lum<.14) continue; cand.push([px,py,lum,d[i]/255,d[i+1]/255,d[i+2]/255]); }
-  // weighted thinning: bright wire/edge pixels survive, dim interior mostly thins out
-  let wsum=0; for(const c of cand) wsum+=c[2]*c[2]*c[2]*3.2+.03;
-  const pts=[]; const keepP=Math.min(1,target/wsum);
-  for(const cnd of cand){ const w=cnd[2]*cnd[2]*cnd[2]*3.2+.03; if(Math.random()<keepP*w) pts.push(cnd); }
-  const COPIES=6, n=pts.length*COPIES;
-  const pos=new Float32Array(n*3), size=new Float32Array(n), copy=new Float32Array(n), rnd=new Float32Array(n), col=new Float32Array(n*3);
-  const H=5.0, W2=5.0;
-  let o=0;
-  for(let k=0;k<COPIES;k++){
-    for(let i=0;i<pts.length;i++,o++){
-      const [px,py,lum,r,g,b]=pts[i];
-      const nx=(px/SZ-.5), ny=(.5-py/SZ);
-      // pseudo-volume: thickness varies with distance from silhouette centreline
-      const th=0.55*(0.35+lum);
-      const z=(Math.random()-.5)*th + (Math.random()-.5)*0.15;
-      pos[o*3]=nx*W2; pos[o*3+1]=ny*H-.1; pos[o*3+2]=z;
-      size[o]=(0.45+lum*1.7)*(Math.random()<.05?2.2:1);
-      copy[o]=k; rnd[o]=Math.random();
-      const boost=.45+lum*.95; col[o*3]=Math.min(1,(r*.7+.35)*boost); col[o*3+1]=Math.min(1,(g*.75+.18)*boost); col[o*3+2]=Math.min(1,(b*.5+.02)*boost);
-    }
-  }
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  geo.setAttribute('aSize',new THREE.BufferAttribute(size,1));
-  geo.setAttribute('aCopy',new THREE.BufferAttribute(copy,1));
-  geo.setAttribute('aRand',new THREE.BufferAttribute(rnd,1));
-  geo.setAttribute('aColor',new THREE.BufferAttribute(col,3));
-  catMat=new THREE.ShaderMaterial({vertexShader:CAT_VS,fragmentShader:CAT_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
-    uniforms:{uTime:{value:0},uSep:{value:S.sep},uPhase:{value:S.ph},uComp:{value:S.N},uKappa:{value:S.ka},uCollapse:{value:0},uSqueeze:{value:S.sq},uPix:{value:1},uKeep:{value:2},uFloor:{value:-2.6},uScanY:{value:0},uGain:{value:1},uEcho:{value:0.75},uRefl:{value:1}}});
-  cat=new THREE.Points(geo,catMat); cat.frustumCulled=false; scene.add(cat);
-}
-/* ---------- GLB hologram cat (primary path). The PNG point cloud above is the fallback. ---------- */
-const CAT_CFG={ scale:4.6, rotY:Math.PI/4-0.32, floorY:-2.6, x:0.0, z:0.1 };   // one place for all corrective transforms
-const HOLO_VS=`
-attribute vec3 aBary; varying vec3 vB; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying vec2 vUv;
-void main(){ vB=aBary; vUv=uv; vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normalize(mat3(modelMatrix)*normal); vV=normalize(cameraPosition-w.xyz); gl_Position=projectionMatrix*viewMatrix*w; }`;
-const HOLO_FS=`
-precision highp float; uniform sampler2D map; uniform float uAlpha,uScanY,uKappa,uTime,uHasMap,uFloor,uRefl; uniform vec3 uCol;
-varying vec3 vB; varying vec3 vN; varying vec3 vV; varying vec3 vW; varying vec2 vUv;
-void main(){
-  vec3 d=fwidth(vB); vec3 a3=smoothstep(vec3(0.0), d*1.05, vB); float edge=1.0-min(min(a3.x,a3.y),a3.z);
-  float fres=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.4);
-  float tex=uHasMap>0.5 ? dot(texture2D(map,vUv).rgb,vec3(0.333)) : 0.5;
-  float scan=exp(-pow((vW.y-uScanY)*3.0,2.0));
-  float noise=0.86+0.14*sin(vW.y*38.0+uTime*3.0+vW.x*17.0);
-  float lum=edge*0.88*noise + fres*0.42 + tex*0.18 + scan*0.5*(edge+fres+0.15);
-  if(!gl_FrontFacing) lum*=0.28;
-  lum*=1.0-uKappa*0.3;
-#ifdef REFL
-  lum*=0.22*uRefl*clamp(1.0-(uFloor-vW.y)*0.30,0.0,1.0);
-#endif
-  vec3 col=uCol*lum + vec3(1.0,0.90,0.70)*(edge*0.12+fres*0.10) + vec3(1.0,0.86,0.58)*scan*0.22;
-  gl_FragColor=vec4(col, clamp(lum,0.0,1.0)*uAlpha);
-}`;
-let holoMats=[], catGroup=null, ghostGroups=[], catParts={};
-function holoMaterial(map){ return new THREE.ShaderMaterial({vertexShader:HOLO_VS,fragmentShader:HOLO_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
-  uniforms:{map:{value:map||null},uHasMap:{value:map?1:0},uAlpha:{value:1},uScanY:{value:0},uKappa:{value:0},uTime:{value:0},uFloor:{value:CAT_CFG.floorY},uRefl:{value:1},uCol:{value:new THREE.Color('#ffb143')}}}); }
-function withBary(geo){ const g=geo.index?geo.toNonIndexed():geo; const n=g.attributes.position.count; const b=new Float32Array(n*3); for(let i=0;i<n;i+=3){ b[i*3]=1; b[i*3+4]=1; b[i*3+8]=1; } g.setAttribute('aBary',new THREE.BufferAttribute(b,3)); return g; }
-async function buildCatGLB(){
-  const gltf=await new Promise((res,rej)=>new GLTFLoader().load('models/schrodinger-cat.glb',res,undefined,rej));
-  const root=gltf.scene;
-  // semantic map from inspection (Tripo names are opaque): traversal order of meshes with >100 tris
-  const meshes=[]; root.traverse(o=>{ if(o.isMesh) meshes.push(o); });
-  const big=meshes.filter(m=>(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3>100);
-  const ROLE=['head','torso','hindL','hindR','frontL','frontR','tail','whiskerA','whiskerB'];
-  big.forEach((m,i)=>{ m.userData.role=ROLE[i]||('part'+i); catParts[m.userData.role]=m; });
-  meshes.forEach(m=>{ if(!big.includes(m)) m.visible=false; });          // 31 fragments <= 20 tris: hidden
-  // replace materials with the hologram shader, keep the baked texture for stripe modulation
-  big.forEach(m=>{ const map=(m.material&&m.material.map)||null; if(map){ map.colorSpace=THREE.SRGBColorSpace; } m.geometry=withBary(m.geometry); m.material=holoMaterial(map); m.material.userData.ghost=false; holoMats.push(m.material); m.frustumCulled=false; });
-  // hierarchy: catGroup (placement) > body (breathing) > [ headPivot(head, whiskers), tailPivot(tail), rest ]
-  catGroup=new THREE.Group(); const body=new THREE.Group(); body.name='body'; catGroup.add(body);
-  const headPivot=new THREE.Group(), tailPivot=new THREE.Group();
-  const hp=new THREE.Vector3(-0.27,0.46,0.12), tp=new THREE.Vector3(0.02,0.50,-0.34);      // neck / tail-base pivots in model space (from bbox inspection)
-  headPivot.position.copy(hp); tailPivot.position.copy(tp);
-  const attach=(piv,m)=>{ m.position.sub(piv.position); piv.add(m); };
-  big.forEach(m=>{ const r=m.userData.role; if(r==='head'||r==='whiskerA'||r==='whiskerB') attach(headPivot,m); else if(r==='tail') attach(tailPivot,m); else body.add(m); });
-  body.add(headPivot,tailPivot);
-  catGroup.position.set(CAT_CFG.x,CAT_CFG.floorY,CAT_CFG.z); catGroup.rotation.y=CAT_CFG.rotY; catGroup.scale.setScalar(CAT_CFG.scale);
-  catGroup.userData={headPivot,tailPivot,body};
-  scene.add(catGroup); catGroup.updateMatrixWorld(true);
-  // ghosts: two temporal echoes (rank 1, either side); deeper ranks are carried by particles only
-  for(const side of [-1,1]){ const g=catGroup.clone(true); g.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.userData.ghost=true; o.material.uniforms.uAlpha.value=0.3; holoMats.push(o.material); } }); g.userData.side=side; scene.add(g); ghostGroups.push(g); }
-  // particle surface: sample the real mesh surface once; head gets a density boost so the face reads
-  const total=isMobile?3200:6500, COPIES=6;
-  const budget={head:0.30,torso:0.30,hindL:0.07,hindR:0.07,frontL:0.07,frontR:0.07,tail:0.10,whiskerA:0.01,whiskerB:0.01};
-  const pts=[]; const tmp=new THREE.Vector3(), nrm=new THREE.Vector3();
-  big.forEach(m=>{ const n=Math.round(total*(budget[m.userData.role]||0.02)); if(!n) return; const smp=new MeshSurfaceSampler(m).build(); for(let i=0;i<n;i++){ smp.sample(tmp,nrm); tmp.applyMatrix4(m.matrixWorld); const isHead=m.userData.role==='head'; pts.push([tmp.x,tmp.y,tmp.z, isHead?0.85:0.6]); } });
-  const n=pts.length*COPIES; const pos=new Float32Array(n*3), size=new Float32Array(n), copy=new Float32Array(n), rnd=new Float32Array(n), col=new Float32Array(n*3);
-  let o=0; for(let k=0;k<COPIES;k++) for(let i=0;i<pts.length;i++,o++){ const [x,y,z,lum]=pts[i]; pos[o*3]=x; pos[o*3+1]=y; pos[o*3+2]=z; size[o]=(0.55+lum*1.1)*(Math.random()<.04?1.8:1); copy[o]=k; rnd[o]=Math.random(); const b=.55+lum*.7; col[o*3]=Math.min(1,1.0*b); col[o*3+1]=Math.min(1,.60*b); col[o*3+2]=Math.min(1,.14*b); }
-  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('aSize',new THREE.BufferAttribute(size,1)); geo.setAttribute('aCopy',new THREE.BufferAttribute(copy,1)); geo.setAttribute('aRand',new THREE.BufferAttribute(rnd,1)); geo.setAttribute('aColor',new THREE.BufferAttribute(col,3));
-  catMat=new THREE.ShaderMaterial({vertexShader:CAT_VS,fragmentShader:CAT_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
-    uniforms:{uTime:{value:0},uSep:{value:S.sep},uPhase:{value:S.ph},uComp:{value:S.N},uKappa:{value:S.ka},uCollapse:{value:0},uSqueeze:{value:S.sq},uPix:{value:1},uKeep:{value:2},uFloor:{value:CAT_CFG.floorY},uScanY:{value:0},uGain:{value:1},uEcho:{value:0.75},uRefl:{value:1}}});
-  cat=new THREE.Points(geo,catMat); cat.frustumCulled=false; scene.add(cat);
-  buildReflections();
-  resize();
-  console.info('[cat] GLB hierarchy:', meshes.length,'meshes;', big.length,'used:', big.map(m=>m.userData.role+'('+(m.geometry.attributes.position.count/3|0)+' tris)').join(', '), '· particles', pts.length, 'x 6 copies');
-}
-function buildReflections(){
-  // particles: same geometry + same uniform object, REFL define fades and mirrors through the floor
-  if(cat&&catMat){ const m=new THREE.ShaderMaterial({vertexShader:CAT_VS,fragmentShader:CAT_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:catMat.uniforms,defines:{REFL:1}});
-    catRefl=new THREE.Points(cat.geometry,m); catRefl.frustumCulled=false; catRefl.position.y=2*CAT_CFG.floorY; catRefl.scale.y=-1; scene.add(catRefl); }
-  if(catGroup){ reflGroup=catGroup.clone(true); reflGroup.traverse(o=>{ if(o.isMesh){ const src=o.material; o.material=new THREE.ShaderMaterial({vertexShader:HOLO_VS,fragmentShader:HOLO_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:src.uniforms,defines:{REFL:1}}); } });
-    scene.add(reflGroup); }
-}
-const FILM_SHADER={
-  uniforms:{tDiffuse:{value:null},uTime:{value:0},uShock:{value:0},uGrain:{value:0.045}},
-  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-  fragmentShader:`uniform sampler2D tDiffuse; uniform float uTime,uShock,uGrain; varying vec2 vUv;
-  float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-  void main(){ vec2 uv=vUv; vec2 c=uv-0.5; float r=length(c);
-    float ab=(0.0022+uShock*0.018)*r;
-    vec3 col; col.r=texture2D(tDiffuse,uv+c*ab).r; col.g=texture2D(tDiffuse,uv).g; col.b=texture2D(tDiffuse,uv-c*ab).b;
-    float vig=smoothstep(0.98,0.30,r); col*=mix(0.62,1.0,vig);
-    float g=(hash(floor(uv*vec2(1600.0,900.0))+fract(uTime*7.0))-0.5)*uGrain;
-    col+=g*(0.6+0.4*(1.0-vig));
-    col+=uShock*0.12*vec3(1.0,0.82,0.55)*(1.0-r);
-    gl_FragColor=vec4(col,1.0); }`
-};
-function buildComposer(){
-  const w=chamber.clientWidth,h=chamber.clientHeight;
-  composer=new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene,camera));
-  bloomPass=new UnrealBloomPass(new THREE.Vector2(w/2,h/2), isMobile?0.34:0.42, 0.32, 0.8);
-  composer.addPass(bloomPass);
-  composer.addPass(new OutputPass());
-  filmPass=new ShaderPass(FILM_SHADER); composer.addPass(filmPass);
-}
-function updateCatMotion(T){
-  if(!catGroup) return;
-  const {headPivot,tailPivot,body}=catGroup.userData; const still=reduced||!S.running;
-  const t=still?0:T;
-  body.scale.y=1+0.005*Math.sin(t*1.25);                       // breathing +/-0.5%
-  body.position.x=0.004*Math.sin(t*0.37);                      // weight shift
-  headPivot.rotation.y=0.035*Math.sin(t*0.45)+0.012*Math.sin(t*1.7);   // yaw +/-2 deg
-  headPivot.rotation.x=0.02*Math.sin(t*0.61);                  // pitch +/-1.2 deg
-  tailPivot.rotation.y=0.05*Math.sin(t*0.9)+0.02*Math.sin(t*2.3);      // sway +/-3 deg
-  // squeeze as anisotropic scale about the feet; ghosts follow separation
-  const sx=Math.exp(-0.10*S.sq), sy=Math.exp(0.10*S.sq);
-  catGroup.scale.set(CAT_CFG.scale*sx,CAT_CFG.scale*sy,CAT_CFG.scale);
-  const off=0.25+S.sep*0.20, breathe=0.08*Math.sin(T*0.6+1.3);
-  ghostGroups.forEach(g=>{ const sd=g.userData.side; g.scale.copy(catGroup.scale); g.position.set(CAT_CFG.x+sd*(off+breathe)*(1-S.collapse),CAT_CFG.floorY,CAT_CFG.z-S.echo*(1-S.collapse)); g.rotation.y=CAT_CFG.rotY; g.visible=S.N>1; });
-  const ghostA=0.16*(1-S.ka*0.35)*(1-S.collapse), primA=0.78+0.22*S.collapse;
-  if(reflGroup){ reflGroup.position.set(catGroup.position.x,CAT_CFG.floorY,catGroup.position.z); reflGroup.rotation.y=catGroup.rotation.y; reflGroup.scale.set(catGroup.scale.x,-catGroup.scale.y,catGroup.scale.z);
-    const rb=reflGroup.children[0]; if(rb){ rb.scale.copy(body.scale); rb.position.copy(body.position); const n=rb.children.length; if(n>=2){ rb.children[n-2].rotation.copy(headPivot.rotation); rb.children[n-1].rotation.copy(tailPivot.rotation); } } }
-  const scanY=scanPlane?scanPlane.position.y:0;
-  for(const m of holoMats){ const u=m.uniforms; u.uTime.value=T; u.uScanY.value=scanY; u.uKappa.value=S.ka; u.uRefl.value=S.refl; u.uAlpha.value=m.userData.ghost?ghostA:primA; }
-  if(catMat){ catMat.uniforms.uScanY.value=scanY; catMat.uniforms.uGain.value=S.gain; catMat.uniforms.uEcho.value=S.echo; catMat.uniforms.uRefl.value=S.refl; }
-}
-
-const MOTE_VS=`
-attribute float aRad,aPh,aLift,aSpd,aSz; uniform float uTime,uPix,uKappa; varying float vA;
-void main(){ float a=aPh+uTime*aSpd; vec3 p=vec3(cos(a)*aRad, aLift+sin(uTime*0.7+aPh*3.0)*0.12, sin(a)*aRad*0.75); vec4 mv=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mv; vA=0.35+0.4*sin(a*3.0+uTime*4.0); vA*=1.0-uKappa*0.4; gl_PointSize=aSz*uPix*(7.0/max(0.5,-mv.z)); }`;
-const MOTE_FS=`precision highp float; varying float vA; void main(){ vec2 q=gl_PointCoord-0.5; float d=length(q); if(d>0.5) discard; float a=smoothstep(0.5,0.0,d); gl_FragColor=vec4(1.0,0.66,0.2,a*vA); }`;
-function buildMotes(){
-  const n=isMobile?500:1400; const pos=new Float32Array(n*3), rad=new Float32Array(n), ph=new Float32Array(n), lift=new Float32Array(n), spd=new Float32Array(n), sz=new Float32Array(n);
-  for(let i=0;i<n;i++){ rad[i]=1.4+Math.random()*3.6; ph[i]=Math.random()*Math.PI*2; lift[i]=(Math.random()-.5)*4.6; spd[i]=(0.06+Math.random()*.22)*(Math.random()<.5?1:-1); sz[i]=.5+Math.random()*1.4; }
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('aRad',new THREE.BufferAttribute(rad,1)); g.setAttribute('aPh',new THREE.BufferAttribute(ph,1)); g.setAttribute('aLift',new THREE.BufferAttribute(lift,1)); g.setAttribute('aSpd',new THREE.BufferAttribute(spd,1)); g.setAttribute('aSz',new THREE.BufferAttribute(sz,1));
-  motesMat=new THREE.ShaderMaterial({vertexShader:MOTE_VS,fragmentShader:MOTE_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uTime:{value:0},uPix:{value:1},uKappa:{value:0}}});
-  motes=new THREE.Points(g,motesMat); motes.frustumCulled=false; scene.add(motes);
-}
-
-function initGL(){
-  try{ renderer=new THREE.WebGLRenderer({canvas:glc,antialias:false,alpha:false,powerPreference:'high-performance'}); }
-  catch(e){ renderer=null; }
-  if(!renderer){ $('fallback').style.display='flex'; return false; }
-  renderer.setClearColor(0x050403,1); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
-  scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x050403,0.035);
-  camera=new THREE.PerspectiveCamera(42,1,.1,100);
-  buildChamber(); buildMotes(); buildComposer();
-  resize(); new ResizeObserver(resize).observe(chamber);
-  return true;
-}
-function resize(){
-  if(!renderer) return;
-  const w=chamber.clientWidth, h=chamber.clientHeight;
-  const dprCap=isMobile?1.3:1.5;
-  const dpr=Math.min(devicePixelRatio||1,dprCap)*S.quality;
-  renderer.setPixelRatio(dpr); renderer.setSize(w,h,false);
-  if(composer){ composer.setPixelRatio(dpr); composer.setSize(w,h); bloomPass.resolution.set(w/2,h/2); bloomPass.enabled=S.quality>0.72; }
-  camera.aspect=w/h; camera.fov=w<h?58:42; camera.updateProjectionMatrix();
-  const px=dpr*(isMobile?1.35:1); if(catMat) catMat.uniforms.uPix.value=px; if(motesMat) motesMat.uniforms.uPix.value=px;
-}
-
-/* ======================================================================
-   4. Interaction + loop
-   ====================================================================== */
-function setVal(k,v){ S[k]=v; wDirty=true; if(S.observed) unobserve(false); }
-$('sep').addEventListener('input',e=>{ setVal('sep',+e.target.value); $('v-sep').textContent=S.sep.toFixed(3); });
-$('sq').addEventListener('input',e=>{ setVal('sq',+e.target.value); $('v-sq').textContent=S.sq.toFixed(3); });
-$('ph').addEventListener('input',e=>{ setVal('ph',+e.target.value); $('v-ph').textContent=S.ph.toFixed(3); });
-$('ka').addEventListener('input',e=>{ setVal('ka',+e.target.value); $('v-ka').textContent=S.ka.toFixed(3); });
-$('comps').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setVal('N',+b.dataset.n); [...$('comps').children].forEach(x=>x.classList.toggle('on',x===b)); });
-const FE=[['f-gain','gain','v-gain',2],['f-scan','scanRate','v-scan',2],['f-echo','echo','v-echo',2],['f-ring','ringRate','v-ring',2],['e-bloom','bloom','v-bloom',2],['e-grain','grain','v-grain',3],['e-grid','grid','v-grid',2],['e-refl','refl','v-refl',2]];
-FE.forEach(([id,key,vid,dp])=>{ const el=$(id); if(!el) return; el.addEventListener('input',e=>{ S[key]=+e.target.value; $(vid).textContent=S[key].toFixed(dp); drawMinis(); }); });
-$('ctabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; [...$('ctabs').children].forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('.cgroup').forEach(g=>g.classList.toggle('on',g.dataset.g===b.dataset.g)); drawMinis(); });
-$('resetBtn').addEventListener('click',()=>{ Object.assign(S,INITIAL); unobserve(); syncControls(); wDirty=true; S.orbit.th=0; S.orbit.phi=0; S.zoom=1; log('state re-prepared: |ψ⟩ = cat(α=3.2, N=6), r=0.75, φ=0.785, κ=0.02'); });
-$('pause').addEventListener('click',()=>{ if(S.running) togglePlay(); });
-function syncControls(){ $('sep').value=S.sep; $('sq').value=S.sq; $('ph').value=S.ph; $('ka').value=S.ka; $('v-sep').textContent=S.sep.toFixed(3); $('v-sq').textContent=S.sq.toFixed(3); $('v-ph').textContent=S.ph.toFixed(3); $('v-ka').textContent=S.ka.toFixed(3); [...$('comps').children].forEach(x=>x.classList.toggle('on',+x.dataset.n===S.N)); }
-document.querySelectorAll('[data-collapse]').forEach(b=>b.addEventListener('click',()=>{ const p=b.closest('.panel'); p.classList.toggle('collapsed'); b.textContent=p.classList.contains('collapsed')?'⌄':'⌃'; }));
-$('advBtn').addEventListener('click',()=>{ $('about').classList.add('open'); });
-$('aboutBtn').addEventListener('click',()=>$('about').classList.add('open'));
-$('expandBtn').addEventListener('click',()=>{ $('wigbig').classList.add('open'); drawWigner(); });
-document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.overlay').classList.remove('open')));
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
-// mobile tabs
-$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.dataset.tab; const p=$(id); const open=!p.classList.contains('open'); document.querySelectorAll('.panel,.col').forEach(x=>x.classList.remove('open')); [...$('tabs').children].forEach(x=>x.classList.remove('on')); if(open){ p.classList.add('open'); p.closest('.col').classList.add('open'); b.classList.add('on'); } });
-// big wigner hover
-function wigRead(e){ const r=wbig.getBoundingClientRect(); const cx=((e.clientX-r.left)/r.width)*2-1, cy=1-((e.clientY-r.top)/r.height)*2; const x=cx*wRange, p=cy*wRange; $('wread').textContent=`W(${x.toFixed(2)}, ${p.toFixed(2)}) = ${wAt(x,p).toFixed(4)}`; }
-wbig.addEventListener('pointermove',wigRead); wbig.addEventListener('pointerdown',wigRead);
-// playback
-$('play').addEventListener('click',()=>{ if(!S.running) togglePlay(); });
-function togglePlay(){ S.running=!S.running; $('play').classList.toggle('on',S.running); $('pause').classList.toggle('on',!S.running); }
-$('speed').addEventListener('click',()=>{ S.speed=S.speed>=2?.5:S.speed+.5; $('speedv').textContent=S.speed.toFixed(1); });
-$('orbit').addEventListener('click',()=>{ S.orbitAuto=!S.orbitAuto; S.orbit.th=0; S.orbit.phi=0; $('orbit').querySelector('b').style.color=S.orbitAuto?'':'var(--ivory-dim)'; });
-$('zoomIn').addEventListener('click',()=>S.zoom=Math.max(.7,S.zoom-.08));
-$('zoomOut').addEventListener('click',()=>S.zoom=Math.min(1.5,S.zoom+.08));
-$('fs').addEventListener('click',()=>{ if(!document.fullscreenElement) (document.documentElement.requestFullscreen||(()=>{})).call(document.documentElement); else document.exitFullscreen(); });
-// pointer parallax + drag orbit
-chamber.addEventListener('pointermove',e=>{ const r=chamber.getBoundingClientRect(); const x=((e.clientX-r.left)/r.width-.5)*2, y=((e.clientY-r.top)/r.height-.5)*2; if(S.drag){ S.orbit.th+= (x-S.drag.x)*1.4; S.orbit.phi+= (y-S.drag.y)*.6; S.orbit.phi=Math.max(-.35,Math.min(.5,S.orbit.phi)); S.drag={x,y}; } else if(!isMobile){ S.pointer.x=x; S.pointer.y=y; } });
-chamber.addEventListener('pointerdown',e=>{ if(e.target.closest('.panel,button,input,.tabs')) return; const r=chamber.getBoundingClientRect(); S.drag={x:((e.clientX-r.left)/r.width-.5)*2,y:((e.clientY-r.top)/r.height-.5)*2}; chamber.setPointerCapture(e.pointerId); });
-chamber.addEventListener('pointerup',()=>S.drag=null); chamber.addEventListener('pointercancel',()=>S.drag=null);
-chamber.addEventListener('pointerleave',()=>{ if(!S.drag){ S.pointer.x=0; S.pointer.y=0; } });
-chamber.addEventListener('wheel',e=>{ if(e.target.closest('.panel')) return; e.preventDefault(); S.zoom=Math.max(.7,Math.min(1.5,S.zoom+Math.sign(e.deltaY)*.05)); },{passive:false});
-// keyboard
-addEventListener('keydown',e=>{ if(e.target instanceof HTMLInputElement) return; if(e.code==='Space'){ e.preventDefault(); togglePlay(); } else if(e.key==='o'||e.key==='O') armObserve(); else if(e.key==='Escape'){ if($('about').classList.contains('open')||$('wigbig').classList.contains('open')){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); } else unobserve(true); } });
-
-// Observe
-const BRANCH_TXT=[['Alive','the branch with the cat still breathing'],['Dead','the branch where she is not'],['Alive','a third branch — a superposition of superpositions'],['Dead','trisqueezed: the fringes here are 3-fold'],['Alive','quadsqueezed: fourfold symmetry, still negative'],['Dead','the sixth lobe — Wigner negativity confirmed']];
-let obsTimer=null;
-function observe(){
-  if(S.observed) return;
-  const x=sampleX(); const k=nearestBranch(x);
-  S.observed=true; S.keep=k; S.obsHist.push(k); if(S.obsHist.length>200) S.obsHist.shift();
-  if(catMat) catMat.uniforms.uKeep.value=k;
-  $('observe').classList.add('done'); $('obsLabel').textContent='Observed'; $('obsSub').textContent='State collapsed · esc to reset'; $('coh').textContent='OBSERVED'; $('sys').textContent='COLLAPSED'; chamber.classList.add('is-observed');
-  const [title,k2]=BRANCH_TXT[k%6];
-  logMeasurement(k,x,title);
-  $('r-title').textContent=title; $('r-sub').textContent=`branch ${k+1} of ${S.N} · x = ${x>=0?'+':'−'}${Math.abs(x).toFixed(2)} · sample from P(x)=∫W dp`; $('r-k').textContent=k2;
-  clearTimeout(obsTimer); obsTimer=setTimeout(()=>$('result').classList.add('show'),650);
-  const cnt=S.obsHist.reduce((a,b)=>{a[b]=(a[b]||0)+1;return a;},{});
-  log(`observe → branch ${k+1}/${S.N} (x=${x.toFixed(3)}). ${S.obsHist.length} runs: ${Object.entries(cnt).sort().map(([b,c])=>`b${+b+1}:${c}`).join(' ')}`);
-  // physical collapse: the state IS now the single coherent state → recompute as N=1 view? we keep the cat but mark collapsed telemetry
-  $('t-neg').textContent='−0.000'; $('t-pur').textContent='1.000'; $('t-fid').textContent=(1/S.N).toFixed(3);
-}
-function unobserve(){ if(!S.observed) return; S.observed=false; chamber.classList.remove('is-observed'); $('observe').classList.remove('done'); $('obsLabel').textContent='Observe'; $('obsSub').textContent='Measurement ready'; $('coh').textContent='COHERENT'; $('sys').textContent='COHERENT'; $('result').classList.remove('show'); wDirty=true; }
-let arming=false;
-function armObserve(){ if(arming||S.observed) return; arming=true; const b=$('observe'); b.classList.add('arming'); $('obsLabel').textContent='Arming'; $('obsSub').textContent='Detector charging'; log('measure(x) — arming detector …'); setTimeout(()=>{ b.classList.remove('arming'); arming=false; observe(); },450); }
-$('observe').addEventListener('click',armObserve);
-function logMeasurement(k,x,title){ const ul=$('mlog'); const e=ul.querySelector('.empty'); if(e) e.remove(); const li=document.createElement('li'); li.innerHTML=`<b>${String(S.obsHist.length).padStart(2,'0')}</b><i>${title}</i><span>b${k+1}/${S.N} · x ${x>=0?'+':'−'}${Math.abs(x).toFixed(2)}</span>`; ul.prepend(li); while(ul.children.length>4) ul.lastChild.remove(); $('mlog-n').textContent=S.obsHist.length; }
-
-// Terminal
-const out=$('out'), cmd=$('cmd');
-const THIST=[]; function log(s){ out.textContent=s; out.title=s; THIST.push(s); if(THIST.length>8) THIST.shift(); const h=$('thist'); if(h) h.innerHTML=THIST.map(l=>`<div>${l.replace(/</g,'&lt;')}</div>`).join(''); }
-cmd.addEventListener('focus',()=>$('thist').classList.add('open')); cmd.addEventListener('blur',()=>setTimeout(()=>$('thist').classList.remove('open'),150));
-const API={
-  help:()=>'help · psi() · wigner(x,p) · alpha(v) · squeeze(v) · phase(v) · components(2|3|6) · kappa(v) · metrics() · observe() · reset() · hist() · pause() · play() · speed(v)',
-  psi:()=>{ const al=alphas(S.N,S.sep,S.ph); return `|ψ⟩ = N·S(${S.sq.toFixed(2)})·[ ${al.map(([r,i])=>`|${r.toFixed(2)}${i>=0?'+':'−'}${Math.abs(i).toFixed(2)}i⟩`).join(' + ')} ]  κ=${S.ka}`; },
-  wigner:(x=0,p=0)=>`W(${(+x).toFixed(2)}, ${(+p).toFixed(2)}) = ${wAt(+x,+p).toFixed(5)}`,
-  alpha:v=>{ setVal('sep',Math.max(0,Math.min(10,+v))); syncControls(); return `α = ${S.sep}`; },
-  squeeze:v=>{ setVal('sq',Math.max(-3,Math.min(3,+v))); syncControls(); return `r = ${S.sq}`; },
-  phase:v=>{ setVal('ph',((+v)%Math.PI+Math.PI)%Math.PI); syncControls(); return `φ = ${S.ph.toFixed(3)}`; },
-  components:v=>{ v=+v; if(![2,3,6].includes(v)) return 'components must be 2, 3 or 6'; setVal('N',v); syncControls(); return `N = ${v}`; },
-  kappa:v=>{ setVal('ka',Math.max(0,Math.min(1,+v))); syncControls(); return `κ = ${S.ka}`; },
-  metrics:()=>{ if(wDirty) refreshPhysics(); return `negativity ${M.neg.toFixed(4)} · purity ${M.pur.toFixed(4)} · fidelity ${M.fid.toFixed(4)} · ⟨n⟩ ${M.n.toFixed(2)} · parity ${M.par.toFixed(3)} · Wmin ${M.wmin.toFixed(3)}`; },
-  observe:()=>{ armObserve(); return 'arming …'; },
-  reset:()=>{ unobserve(); return 'state re-prepared'; },
-  hist:()=>{ if(!S.obsHist.length) return 'no observations yet'; const c={}; S.obsHist.forEach(k=>c[k]=(c[k]||0)+1); return Object.entries(c).sort().map(([k,v])=>`branch ${+k+1}: ${'█'.repeat(Math.max(1,Math.round(v/S.obsHist.length*20)))} ${v}`).join('   '); },
-  pause:()=>{ if(S.running) togglePlay(); return 'paused'; }, play:()=>{ if(!S.running) togglePlay(); return 'running'; },
-  speed:v=>{ S.speed=Math.max(.25,Math.min(4,+v||1)); $('speedv').textContent=S.speed.toFixed(1); return `speed ${S.speed}×`; },
-  reset_all:()=>{ $('resetBtn').click(); return 'reset'; },
-  clear:()=>'',
-};
-cmd.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const s=cmd.value.trim(); cmd.value=''; if(!s) return; const m=s.match(/^([a-zA-Z_]+)\s*(?:\((.*)\))?$/); if(!m||!API[m[1]]){ log(`unknown: ${s} — type help`); return; } const args=(m[2]||'').split(',').map(a=>a.trim()).filter(Boolean).map(a=>isNaN(+a)?a:+a); try{ log(String(API[m[1]](...args))); }catch(err){ log('error: '+err.message); } });
-window.__PSI={ get state(){ return {...S}; }, W, get metrics(){ return {...M}; }, wAt, api:API, tex:()=>`|\\psi\\rangle = \\mathcal N\\, S(${S.sq})\\sum_{k=0}^{${S.N-1}} |\\alpha e^{i(2\\pi k/${S.N}+${S.ph.toFixed(3)})}\\rangle,\\quad \\alpha=${S.sep}` };
-
-/* ======================================================================
-   5. Frame loop
-   ====================================================================== */
-let last=performance.now(), fpsAcc=0, fpsN=0, fpsShown=60, lowStreak=0, phDrift=0, wigTick=0;
-const camTarget=new THREE.Vector3(0,-.35,0);
+/* ---- frame loop ---- */
+let last=performance.now(), acc=0, n=0, low=0, phDrift=0, tick=0;
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min(.05,(now-last)/1000); last=now;
-  const hidden=document.hidden; if(hidden) return;
-  // fps meter + adaptive quality
-  fpsAcc+=dt; fpsN++; if(fpsAcc>=.5){ const f=fpsN/fpsAcc; fpsShown=Math.round(f); $('fps').textContent=fpsShown; if($('strip')){ $('s-a').textContent=S.sep.toFixed(2); $('s-n').textContent=S.N; $('s-r').textContent=S.sq.toFixed(2); $('s-p').textContent=S.ph.toFixed(3); $('s-k').textContent=S.ka.toFixed(3); $('s-dpr').textContent=(renderer?renderer.getPixelRatio():1).toFixed(2); $('s-bloom').textContent=(bloomPass&&bloomPass.enabled&&S.bloom>0.01)?'ON':'OFF'; } fpsAcc=0; fpsN=0; if(f<38&&S.quality>0.6){ lowStreak++; if(lowStreak>=3){ S.quality-=.15; resize(); lowStreak=0; } } else lowStreak=0; }
-  if(S.running&&!reduced){ S.t+=dt*S.speed; S.tau+=dt*S.speed; }
-  // clock UI
-  const mm=String(Math.floor(S.t/60)%60).padStart(2,'0'), ss=(S.t%60).toFixed(3).padStart(6,'0'); $('tcode').textContent=`t = ${mm}:${ss}`;
-  const prog=((S.t%1800)/1800*100); $('tfill').style.width=prog+'%'; $('tknob').style.left=prog+'%';
-  // free evolution rotates the phase-space ring slowly (this is real time evolution)
-  if(S.running&&!reduced&&!S.observed){ phDrift+=dt*S.speed*0.05; if(phDrift>0.03){ S.ph=(S.ph+phDrift)%Math.PI; phDrift=0; $('ph').value=S.ph; $('v-ph').textContent=S.ph.toFixed(3); wDirty=true; } }
-  // collapse envelope
-  const target=S.observed?1:0; S.collapse+= (target-S.collapse)*Math.min(1,dt*(S.observed?4.5:3));
-  if(wDirty && (wigTick++%2===0)) { refreshPhysics(); if(S.observed){ $('t-neg').textContent='−0.000'; $('t-pur').textContent='1.000'; $('t-fid').textContent=(1/S.N).toFixed(3); } }
-  if(!renderer) return;
-  const T=S.tau;
-  // camera
-  const auto=S.orbitAuto&&!reduced? Math.sin(T*.11)*.10 : 0;
-  const th=auto+S.orbit.th+S.pointer.x*.10, ph=.07+S.orbit.phi+S.pointer.y*.05;
-  const R=(isMobile?10.5:11.5)*S.zoom;
-  const cx=Math.sin(th)*Math.cos(ph)*R, cy=Math.sin(ph)*R+.4, cz=Math.cos(th)*Math.cos(ph)*R;
-  camera.position.lerp(new THREE.Vector3(cx,cy,cz),.08); camera.lookAt(camTarget);
-  // uniforms
-  if(catMat){ const u=catMat.uniforms; u.uTime.value=T; u.uSep.value=S.sep; u.uPhase.value=S.ph; u.uComp.value=S.N; u.uKappa.value=S.ka; u.uSqueeze.value=S.sq; u.uCollapse.value=S.collapse; }
-  motesMat.uniforms.uTime.value=T; motesMat.uniforms.uKappa.value=S.ka;
-  // rings: expanding wavefronts, contract on collapse
-  rings.forEach((r,i)=>{ const w=((i/rings.length)+T*S.ringRate)%1; const rad=(.6+w*4.4)*(1-.7*S.collapse); r.scale.set(rad,1,rad*.78); r.material.opacity=(1-w)*.28*(1-S.ka*.5)+.05*S.collapse; });
-  // scan plane
-  const sy=((T*S.scanRate)%3.2)-1.6; const y=S.collapse>.05? -2.55+ (S.collapse*5.1) : sy*1.55; scanPlane.position.y=y; scanEdge.position.y=y; scanPlane.material.opacity=.045+.12*S.collapse; scanEdge.material.opacity=.45+.5*S.collapse;
-  // flash on collapse
-  const fl=Math.max(0,Math.sin(Math.PI*Math.min(1,S.collapse*1.6))); flash.material.opacity=fl*.55; flash.scale.setScalar(9+fl*6);
-  frames.children.forEach((f,i)=>{ f.material.opacity=(.10+(i===3?.15:0))*(1-.6*S.collapse)*S.grid; });
-  for(const m of gridMats){ if(m.userData.base!=null && !frames.children.some(f=>f.material===m)) m.opacity=m.userData.base*S.grid; }
-  updateCatMotion(T);
-  if(filmPass){ filmPass.uniforms.uTime.value=T; filmPass.uniforms.uShock.value=fl; filmPass.uniforms.uGrain.value=reduced?Math.min(0.02,S.grain):S.grain; }
-  if(bloomPass){ bloomPass.strength=S.bloom; }
-  if(composer) composer.render(); else renderer.render(scene,camera);
+  if(document.hidden||!visible) return;
+  acc+=dt; n++;
+  if(acc>=.5){ const f=n/acc; acc=0; n=0; if(f<34&&S.quality>0.6){ if(++low>=3){ S.quality-=.15; resize(); low=0; } } else low=0; }
+  if(!reduced){ S.t+=dt; S.tau+=dt; }
+  const rem=Math.max(0,1800-(S.t%1800));
+  $('k-t').textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(Math.floor(rem%60)).padStart(2,'0');
+  if(!reduced){ phDrift+=dt*0.05; if(phDrift>0.03){ S.ph=(S.ph+phDrift)%Math.PI; phDrift=0; wDirty=true; } }
+  if(wDirty && (tick++%3===0)) refresh();
+  updateScene(S.tau);
 }
 
-/* ======================================================================
-   6. Boot
-   ====================================================================== */
-const bootT0=performance.now();
-function bootStep(msg,pct,ok){ const ol=$('bootlog'); if(!ol) return; if(ok){ const last=ol.lastElementChild; if(last) last.classList.add('ok'); } if(msg){ const li=document.createElement('li'); li.textContent=msg; ol.appendChild(li); } if(pct!=null) $('bootfill').style.width=pct+'%'; }
-async function bootDone(){ bootStep(null,100,true); bootStep('chamber ready',100); const wait=Math.max(0,2200-(performance.now()-bootT0)); await new Promise(r=>setTimeout(r,wait+350)); $('boot').classList.add('done'); setTimeout(()=>$('boot').remove(),700); }
+/* ---- boot ---- */
 (async()=>{
-  bootStep('initialising observation chamber',8);
-  refreshPhysics();
-  bootStep('preparing |ψ⟩ = cat(α='+S.sep+', N='+S.N+') · W(x,p) '+G+'×'+G,30,true);
-  if(initGL()){ bootStep('webgl context · post chain · bloom',48,true); $('coh').textContent='LOADING'; log('loading models/schrodinger-cat.glb …'); bootStep('loading models/schrodinger-cat.glb',62,true); try{ await buildCatGLB(); bootStep('sampling surface · hologram layers · reflections',88,true); log('model ready — 9 parts, hologram + surface particles. type help'); }catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud', e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } } $('coh').textContent=S.observed?'OBSERVED':'COHERENT'; }
-  document.addEventListener('visibilitychange',()=>{ last=performance.now(); });
+  refresh();
+  if(initGL(glc,chamber,{camScale:0.96,onFail:()=>{ $('loading').textContent='WebGL unavailable'; }})){
+    attachPointer(chamber,{wheel:false});          // wheel stays with the page so scrolling works
+    try{ await buildCatGLB(); }
+    catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud',e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } }
+    $('loading').classList.add('done');
+  }
   requestAnimationFrame(frame);
-  bootDone();
 })();
 </script>
 </body>
