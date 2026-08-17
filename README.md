@@ -52,6 +52,7 @@ Type `help` in the bottom bar. `psi()` prints the ket. `wigner(x,p)` evaluates W
 |---|---|
 | `index.html` | Landing page — five fullscreen panels: hero chamber, interactive Wigner, field notes, methodology, measurement + CTA. |
 | `studies.html` | Study log — six numerical experiments, recomputed in-browser each load, reproducible from a seed. |
+| `hardware/` | IBM Quantum submission script + raw counts from real QPU runs (`runs.json`, written only by a real job). |
 | `js/studies.js` | The analyses: KS test, Wehrl/Lieb, Mandel Q, Fisher information, Zₙ harmonics, Zurek fringe scaling. |
 | `lab.html` | The instrument — full controls, telemetry, Wigner panel, terminal, OBSERVE. |
 | `js/physics.js` | Physics core: state, Wigner function, metrics, Born-rule sampling. No DOM. |
@@ -60,6 +61,17 @@ Type `help` in the bottom bar. `psi()` prints the ket. `wigner(x,p)` evaluates W
 | `vendor/` | three.js r169 + loaders + postprocessing (MIT). |
 
 Both pages import the same two modules, so the numbers on the landing page are computed by exactly the code the lab runs — there is no second implementation and no hardcoded copy.
+
+## Hardware
+
+`hardware/run_ibm.py` prepares GHZ states — the discrete-variable cat — on an IBM Quantum
+superconducting QPU and measures populations plus parity oscillations, bounding the GHZ fidelity
+from below (`F ≥ (P₀+P₁)/2 + C/2`; `F > ½` certifies genuine multipartite entanglement). The
+parity fringe frequency counts the components of the superposition, the hardware analogue of the
+phase-space fringe scaling in study S-06. See [`hardware/README.md`](hardware/README.md).
+
+Until a real job has been run, the study page shows an explicit "awaiting run" state. Simulated
+data is never substituted for hardware data.
 
 ## Run locally
 

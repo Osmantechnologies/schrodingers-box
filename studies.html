@@ -63,6 +63,22 @@ h1{font-family:var(--head);font-weight:800;font-size:clamp(34px,4.4vw,64px);line
 .rb.acts{margin-left:auto;flex-direction:row;align-items:center;gap:10px;border-left:0}
 .prog{height:2px;background:var(--hair-2)}
 .prog i{display:block;height:100%;width:0;background:var(--amber);box-shadow:0 0 8px var(--amber);transition:width .25s}
+/* hardware */
+.hw{padding:64px 0;border-bottom:1px solid var(--hair-2);background:linear-gradient(180deg,rgba(255,157,24,.035),transparent 60%)}
+.hw .meta{display:flex;flex-wrap:wrap;gap:0;margin:22px 0 30px;border:1px solid var(--hair-2);border-radius:3px}
+.hw .meta div{padding:12px 20px;border-left:1px solid var(--hair-2);display:flex;flex-direction:column;gap:3px;min-width:0}
+.hw .meta div:first-child{border-left:0}
+.hw .meta .l{font-family:var(--disp);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.hw .meta .v{font-family:var(--disp);font-size:15px;color:var(--amber-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hwgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.hwcard{border:1px solid var(--hair-2);border-radius:4px;background:rgba(8,6,3,.5);overflow:hidden}
+.hwcard .ph{display:flex;justify-content:space-between;align-items:baseline;padding:11px 16px;border-bottom:1px solid var(--hair-2);font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase}
+.hwcard .ph b{color:var(--amber-hi);font-weight:500}
+.hwcard .ph span{font-size:10.5px;color:var(--ivory-dim);letter-spacing:.16em}
+.empty{padding:34px 26px;border:1px dashed var(--hair);border-radius:3px;color:var(--ivory-dim);font-size:13px;line-height:1.8;background:rgba(0,0,0,.2)}
+.empty b{color:var(--amber-2);font-weight:500}
+.empty code{color:var(--amber-hi);font-size:12px}
+@media (max-width:1080px){ .hwgrid{grid-template-columns:minmax(0,1fr)} }
 /* study */
 .study{padding:74px 0;border-bottom:1px solid var(--hair-3)}
 .sh{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:baseline;margin-bottom:12px}
@@ -165,6 +181,15 @@ footer a:hover{color:var(--amber-hi)}
   </div>
   <div class="prog"><i id="prog"></i></div>
 </div>
+
+
+<section class="hw" id="hardware">
+  <div class="wrap">
+    <div class="sh rv"><span class="id">H-01</span><h2>Hardware run</h2><span class="badge run" id="hw-badge">Loading&hellip;</span></div>
+    <div class="field rv">Superconducting QPU &middot; IBM Quantum &middot; GHZ populations + parity oscillation</div>
+    <div id="hw-body"></div>
+  </div>
+</section>
 
 <main id="studies"></main>
 
@@ -419,6 +444,103 @@ $('b-csv').addEventListener('click',()=>{
   dl(new Blob([L.join('\n')],{type:'text/csv'}), LAST.id+'.csv');
 });
 function dl(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),4000); }
+
+
+/* ============ hardware run (real QPU counts, if any have been recorded) ============ */
+const popcount=b=>{ let c=0; for(const ch of b) if(ch==='1') c++; return c; };
+function parityOf(counts){ let t=0,s2=0; for(const [b,v] of Object.entries(counts)){ t+=v; s2+=((popcount(b)%2)?-1:1)*v; } return t? s2/t : 0; }
+function fracOf(counts,bit){ let t=0,v=0; for(const [b,c] of Object.entries(counts)){ t+=c; if(b===bit) v+=c; } return t? v/t : 0; }
+/* least-squares projection of P(phi) onto cos/sin at frequency m */
+function proj(pts,m){ let A=0,B=0; for(const [phi,P] of pts){ A+=P*Math.cos(m*phi); B+=P*Math.sin(m*phi); }
+  const den=Math.max(pts.length/2,1e-9); return {amp:Math.hypot(A,B)/den, A,B,den}; }
+function analyseRun(r){
+  const n=r.n;
+  const z='0'.repeat(n), o='1'.repeat(n);
+  const p0=fracOf(r.populations||{},z), p1=fracOf(r.populations||{},o);
+  const pts=r.parity.map(q=>[q.phi, parityOf(q.counts)]).sort((a,b)=>a[0]-b[0]);
+  const C=proj(pts,n).amp;
+  let bestM=1,bestR=-1;
+  for(let m=0.5;m<=10.001;m+=0.5){ const R=proj(pts,m).amp; if(R>bestR){ bestR=R; bestM=m; } }
+  const F=(p0+p1)/2 + C/2;
+  return {n,p0,p1,pts,C,F,bestM,leak:Math.max(0,1-p0-p1),entangled:F>0.5,populations:r.populations};
+}
+function hwPlot(run){
+  const c=mk(520,190), x=c.getContext('2d');
+  axes(x,520,190,{xl:'phi',yl:'parity'});
+  const L=38,R=510,T=8,B=164, span=run.pts.length?run.pts[run.pts.length-1][0]:1;
+  const px=v=>L+(v/(span||1))*(R-L), py=v=>(T+B)/2-v*((B-T)/2)*0.92;
+  x.strokeStyle='rgba(242,230,201,.28)'; x.beginPath(); x.moveTo(L,py(0)); x.lineTo(R,py(0)); x.stroke();
+  const f=proj(run.pts,run.n);
+  x.strokeStyle='rgba(242,230,201,.45)'; x.setLineDash([4,3]); x.beginPath();
+  for(let i=0;i<=180;i++){ const phi=span*i/180;
+    const v=(f.A*Math.cos(run.n*phi)+f.B*Math.sin(run.n*phi))/f.den;
+    i?x.lineTo(px(phi),py(v)):x.moveTo(px(phi),py(v)); }
+  x.stroke(); x.setLineDash([]);
+  x.strokeStyle=AM; x.lineWidth=1.6; x.beginPath();
+  run.pts.forEach((p,i)=>{ i?x.lineTo(px(p[0]),py(p[1])):x.moveTo(px(p[0]),py(p[1])); }); x.stroke();
+  x.fillStyle=AMH; run.pts.forEach(p=>{ x.beginPath(); x.arc(px(p[0]),py(p[1]),2.4,0,7); x.fill(); });
+  x.fillStyle=DIM; x.font='10px IBM Plex Mono'; x.fillText('dashed: cos('+run.n+'\u03C6) fit',46,20);
+  return c;
+}
+function hwPops(run){
+  const c=mk(520,150), x=c.getContext('2d');
+  const ent=Object.entries(run.populations).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const tot=Object.values(run.populations).reduce((a,b)=>a+b,0);
+  axes(x,520,150,{xl:'outcome',yl:'P'});
+  const L=38,R=510,T=8,B=124, bw=(R-L)/Math.max(ent.length,1), z='0'.repeat(run.n), o='1'.repeat(run.n);
+  const mx=Math.max(...ent.map(e=>e[1]))/tot;
+  ent.forEach((e,i)=>{ const h=(e[1]/tot/mx)*(B-T);
+    x.fillStyle=(e[0]===z||e[0]===o)?AMH:'rgba(255,157,24,.42)';
+    x.fillRect(L+i*bw+1,B-h,Math.max(2,bw-3),h);
+    x.save(); x.translate(L+i*bw+bw/2, B+4); x.rotate(-Math.PI/3);
+    x.fillStyle=(e[0]===z||e[0]===o)?'rgba(255,213,138,.9)':DIM; x.font='8px IBM Plex Mono';
+    x.fillText(e[0],0,0); x.restore(); });
+  return c;
+}
+function renderHardware(d){
+  const body=$('hw-body'), badge=$('hw-badge');
+  if(!d || !d.runs || !d.runs.length){
+    badge.className='badge run'; badge.textContent='Awaiting run';
+    body.innerHTML='<div class="empty"><b>No hardware run has been recorded yet.</b> This section stays empty on purpose &mdash; it will only ever show counts that came back from a real quantum processor, never a simulation dressed up as one.<br><br>The experiment is written and validated: <code>hardware/run_ibm.py</code> prepares GHZ states (|0&hellip;0&rang; + |1&hellip;1&rang; &mdash; the discrete-variable cat) on an IBM superconducting QPU, measures the populations and the parity oscillation, and writes the raw counts to <code>hardware/runs.json</code>. It needs a free IBM Quantum API key to submit; run <code>python hardware/run_ibm.py --dry-run</code> to see the circuits validated against a local simulator without one.</div>';
+    return;
+  }
+  const runs=d.runs.map(analyseRun);
+  const ok=runs.every(r=>r.entangled);
+  badge.className='badge '+(ok?'ok':'no');
+  badge.textContent=ok?'Entanglement certified':'Below witness threshold';
+  const when=new Date(d.generated);
+  body.innerHTML=
+    '<div class="meta rv">'+
+    '<div><span class="l">Backend</span><span class="v">'+d.backend+'</span></div>'+
+    '<div><span class="l">Device</span><span class="v">'+d.device_qubits+' qubits</span></div>'+
+    '<div><span class="l">Job</span><span class="v">'+d.job_id+'</span></div>'+
+    '<div><span class="l">Recorded</span><span class="v">'+when.toISOString().slice(0,16).replace('T',' ')+' UTC</span></div>'+
+    '<div><span class="l">Shots</span><span class="v">'+d.shots.toLocaleString()+'</span></div>'+
+    '<div><span class="l">Circuits</span><span class="v">'+d.circuits+'</span></div>'+
+    '</div>'+
+    '<div class="prose rv" style="max-width:88ch;margin-bottom:26px">'+
+    '<p>These are measurements from a physical quantum processor: superconducting transmons, cooled to millikelvin, executing '+d.circuits+' circuits. An <b>n-qubit GHZ state is the discrete-variable cat</b> &mdash; a superposition of all-zero and all-one &mdash; and its parity oscillates as <b>cos(n&middot;&phi;)</b>. The fringe frequency counts the components of the superposition, exactly as the phase-space fringe wavenumber does in study S-06.</p>'+
+    '<p>The fidelity bound <b>F &ge; (P&#8320;+P&#8321;)/2 + C/2</b> is the standard GHZ witness; <b>F &gt; &frac12; certifies genuine multipartite entanglement</b>. Everything below is computed in your browser from the raw counts in <code>hardware/runs.json</code> &mdash; the committed artefact is the measurement record, not a summary of it.</p>'+
+    '</div><div class="hwgrid" id="hwgrid"></div>';
+  const g=$('hwgrid');
+  runs.forEach(r=>{
+    const card=document.createElement('div'); card.className='hwcard rv';
+    card.innerHTML='<div class="ph"><b>GHZ-'+r.n+'</b><span>fringe freq '+r.bestM+' &middot; expected '+r.n+'</span></div>';
+    const pw=document.createElement('div'); pw.appendChild(hwPops(r)); pw.appendChild(hwPlot(r));
+    card.appendChild(pw);
+    const dl=document.createElement('dl'); dl.className='kv';
+    dl.innerHTML='<dt>P|0&hellip;0&rang;</dt><dd>'+f(r.p0,3)+'</dd>'+
+      '<dt>P|1&hellip;1&rang;</dt><dd>'+f(r.p1,3)+'</dd>'+
+      '<dt>Leakage to other outcomes</dt><dd class="dim">'+f(r.leak,3)+'</dd>'+
+      '<dt>Coherence C</dt><dd>'+f(r.C,3)+'</dd>'+
+      '<dt>Fidelity bound F</dt><dd>'+f(r.F,3)+'</dd>'+
+      '<dt>Entanglement witness</dt><dd class="'+(r.entangled?'':'dim')+'">'+(r.entangled?'F &gt; &frac12; &middot; certified':'inconclusive')+'</dd>';
+    card.appendChild(dl); g.appendChild(card);
+  });
+  document.querySelectorAll('.hw .rv').forEach(el=>el.classList.add('in'));
+}
+fetch('hardware/runs.json',{cache:'no-store'})
+  .then(r=>r.ok?r.json():null).catch(()=>null).then(renderHardware);
 
 /* boot */
 const q=new URL(location).searchParams.get('seed');
