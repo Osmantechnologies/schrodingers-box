@@ -49,10 +49,11 @@ Type `help` in the bottom bar. `psi()` prints the ket. `wigner(x,p)` evaluates W
 
 | File | What it is |
 |---|---|
-| `index.html` | Landing page. Live hero chamber, real stat bar, the experiment / field notes / methodology. |
+| `index.html` | Landing page — five fullscreen panels: hero chamber, interactive Wigner, field notes, methodology, measurement + CTA. |
 | `lab.html` | The instrument — full controls, telemetry, Wigner panel, terminal, OBSERVE. |
 | `js/physics.js` | Physics core: state, Wigner function, metrics, Born-rule sampling. No DOM. |
 | `js/chamber.js` | three.js scene: chamber, hologram cat, particles, reflections, post chain. |
+| `assets/land/` | GPT-generated backdrops (ion trap, cat portrait, sealed box, optics bokeh), WebP, screen-blended on black. |
 | `vendor/` | three.js r169 + loaders + postprocessing (MIT). |
 
 Both pages import the same two modules, so the numbers on the landing page are computed by exactly the code the lab runs — there is no second implementation and no hardcoded copy.

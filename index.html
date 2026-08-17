@@ -14,29 +14,35 @@
 :root{
   --bg:#050403; --amber:#ff9d18; --amber-2:#ffb547; --amber-hi:#ffd58a; --ivory:#f2e6c9; --ivory-dim:rgba(242,230,201,.5);
   --hair:rgba(255,157,24,.22); --hair-2:rgba(255,157,24,.11); --hair-3:rgba(255,157,24,.06);
-  --panel:rgba(8,6,3,.6);
   --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
   --disp:'Barlow Condensed','IBM Plex Mono',sans-serif;
   --head:'Archivo','Barlow Condensed',system-ui,sans-serif;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
-  --wrap:1560px;
+  --nav:66px; --wrap:1560px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-snap-type:y proximity;scroll-padding-top:var(--nav)}
 body{background:var(--bg);color:var(--ivory);font-family:var(--mono);overflow-x:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 :focus-visible{outline:1px solid var(--amber-2);outline-offset:3px}
+img{max-width:100%;display:block}
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 40px}
 .cap{font-family:var(--disp);text-transform:uppercase;letter-spacing:.26em;font-size:11px;color:var(--ivory-dim)}
+/* ---------------- panels ---------------- */
+.panel{position:relative;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;scroll-snap-align:start;padding:calc(var(--nav) + 26px) 0 34px;border-bottom:1px solid var(--hair-3);overflow:hidden}
+.panel>.wrap{position:relative;z-index:2;width:100%}
+.bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;opacity:.36;-webkit-mask-image:radial-gradient(ellipse 78% 74% at 50% 50%,#000 38%,transparent 92%);mask-image:radial-gradient(ellipse 78% 74% at 50% 50%,#000 38%,transparent 92%)}
+.bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--bg) 0%,transparent 22%,transparent 74%,var(--bg) 100%)}
 /* ---------------- nav ---------------- */
-.nav{position:sticky;top:0;z-index:30;background:rgba(5,4,3,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hair-2);padding-top:var(--sat)}
-.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:24px}
+.nav{position:fixed;left:0;right:0;top:0;z-index:40;background:rgba(5,4,3,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair-2);padding-top:var(--sat)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:var(--nav);gap:24px}
 .brand{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.3em;white-space:nowrap}
 .brand::before{content:"";width:9px;height:9px;border:1px solid var(--amber);transform:rotate(45deg);flex:none}
-.nav ul{display:flex;gap:38px;list-style:none}
+.nav ul{display:flex;gap:36px;list-style:none}
 .nav ul a{font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim);transition:color .2s}
-.nav ul a:hover{color:var(--amber-hi)}
+.nav ul a:hover,.nav ul a.on{color:var(--amber-hi)}
 .nav .right{display:flex;align-items:center;gap:22px}
 .nav .sys{font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;font-family:var(--disp);font-size:13px;letter-spacing:.26em;text-transform:uppercase;padding:13px 26px;border-radius:2px;border:1px solid var(--hair);color:var(--amber-hi);transition:background .2s,border-color .2s,transform .12s}
@@ -45,26 +51,30 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .btn.solid{background:var(--amber);border-color:var(--amber);color:#1a0f02;font-weight:600}
 .btn.solid:hover{background:var(--amber-2);border-color:var(--amber-2)}
 .btn.sm{padding:9px 18px;font-size:11px;letter-spacing:.22em}
+/* progress rail */
+.rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:35;display:none;flex-direction:column;gap:16px}
+@media (min-width:1560px){ :root{--wrap:1400px} .rail{display:flex} }
+.rail button{display:flex;align-items:center;gap:10px;justify-content:flex-end;font-family:var(--disp);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:transparent;transition:color .25s}
+.rail button i{width:22px;height:1px;background:var(--hair);transition:background .25s,width .25s}
+.rail button.on i{background:var(--amber);width:34px;box-shadow:0 0 8px rgba(255,157,24,.7)}
+.rail button:hover{color:var(--ivory-dim)}
 /* ---------------- hero ---------------- */
-.hero{position:relative;padding:34px 0 0}
-.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:48px;align-items:center;min-height:min(76vh,760px)}
-.bk{position:absolute;width:26px;height:26px;pointer-events:none;opacity:.55;z-index:2}
+#top .wrap{display:grid;grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);gap:44px;align-items:center}
+.bk{position:absolute;width:26px;height:26px;pointer-events:none;opacity:.5;z-index:3}
 .bk::before,.bk::after{content:"";position:absolute;background:var(--amber)}
 .bk::before{width:100%;height:1px}.bk::after{width:1px;height:100%}
-.bk.tl{left:0;top:0}.bk.tr{right:0;top:0}.bk.bl{left:0;bottom:0}.bk.br{right:0;bottom:0}
+.bk.tl{left:26px;top:calc(var(--nav) + 22px)}.bk.tr{right:26px;top:calc(var(--nav) + 22px)}
+.bk.bl{left:26px;bottom:22px}.bk.br{right:26px;bottom:22px}
 .bk.tr::before,.bk.br::before{right:0}.bk.tr::after,.bk.br::after{right:0}
 .bk.bl::before,.bk.br::before{bottom:0}.bk.bl::after,.bk.br::after{bottom:0}
-.hero-mark{position:absolute;font-size:10.5px;color:rgba(242,230,201,.32);font-family:var(--mono);letter-spacing:.1em;pointer-events:none}
-.hero-mark.a{left:46px;top:26px}.hero-mark.b{left:46px;bottom:24px}
-.hero-copy{position:relative;z-index:3;padding:20px 0}
-.watermark{position:absolute;left:-8px;top:-40px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:clamp(56px,7vw,104px);color:rgba(255,181,71,.05);pointer-events:none;user-select:none;white-space:nowrap}
-h1{font-family:var(--head);font-weight:800;font-size:clamp(42px,5.1vw,80px);line-height:.99;letter-spacing:-.022em;color:#f6ecd6;max-width:12ch}
-.hero-sub{margin-top:26px;font-size:15px;line-height:1.72;color:var(--ivory-dim);max-width:44ch}
-.hero-cta{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap}
-.hero-note{margin-top:26px;font-size:11px;letter-spacing:.06em;color:rgba(242,230,201,.34)}
+.hero-copy{position:relative;z-index:3}
+.watermark{position:absolute;left:-6px;top:-52px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:clamp(56px,7vw,104px);color:rgba(255,181,71,.05);pointer-events:none;user-select:none;white-space:nowrap}
+h1{font-family:var(--head);font-weight:800;font-size:clamp(40px,4.9vw,78px);line-height:.99;letter-spacing:-.022em;color:#f6ecd6;max-width:12ch}
+.hero-sub{margin-top:24px;font-size:15px;line-height:1.72;color:var(--ivory-dim);max-width:44ch}
+.cta-row{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap}
+.hero-note{margin-top:24px;font-size:11px;letter-spacing:.06em;color:rgba(242,230,201,.34)}
 .hero-note b{color:var(--ivory-dim);font-weight:400}
-/* chamber */
-.hero-box{position:relative;height:min(72vh,700px);min-height:400px}
+.hero-box{position:relative;height:min(66vh,660px);min-height:360px}
 #chamber{position:absolute;inset:0;border-radius:4px;overflow:hidden;background:radial-gradient(120% 90% at 50% 45%,#0c0803 0%,#050403 55%,#030202 100%);touch-action:pan-y;cursor:grab}
 #chamber:active{cursor:grabbing}
 #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -76,120 +86,207 @@ h1{font-family:var(--head);font-weight:800;font-size:clamp(42px,5.1vw,80px);line
 .axz::after{content:"z";font-style:italic;position:absolute;bottom:-19px;left:2px}
 .axx{position:absolute;bottom:12px;left:18%;right:20%;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ivory-dim);pointer-events:none}
 .axx::after{content:"x";font-style:italic;position:absolute;left:50%;top:15px;transform:translateX(-50%)}
-.psi{position:absolute;left:16%;top:15%;font-size:13px;color:var(--ivory);pointer-events:none}
+.psi{position:absolute;left:15%;top:14%;font-size:13px;color:var(--ivory);pointer-events:none}
 .psi::before{content:"";position:absolute;left:-3px;top:22px;width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
 .psi i{position:absolute;left:4px;top:24px;width:64px;height:1px;background:linear-gradient(90deg,var(--amber),transparent);transform:rotate(26deg);transform-origin:left}
-.wig-inset{position:absolute;right:7%;top:11%;width:150px;pointer-events:none}
+.wig-inset{position:absolute;right:7%;top:10%;width:142px;pointer-events:none}
 .wig-inset .t{font-size:11px;color:var(--ivory);text-align:center;margin-bottom:6px}
-.wig-inset canvas{display:block;width:100%;aspect-ratio:1;border:1px solid var(--hair-2);background:#030201}
+.wig-inset canvas{width:100%;aspect-ratio:1;border:1px solid var(--hair-2);background:#030201}
 .wig-inset .lg{position:absolute;right:-13px;top:26px;bottom:2px;width:4px;border:1px solid var(--hair-2);background:linear-gradient(180deg,var(--amber-hi) 0%,var(--amber) 42%,#1a1006 62%,#000 100%)}
-.hint-r{position:absolute;right:5%;bottom:19%;display:flex;align-items:center;gap:12px;font-family:var(--disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim);pointer-events:none}
+.hint-r{position:absolute;right:5%;display:flex;align-items:center;gap:12px;font-family:var(--disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim);pointer-events:none}
+.hint-r.a{bottom:20%}.hint-r.b{bottom:12%}
 .hint-r .orb{width:26px;height:14px;border:1px solid var(--amber-2);border-radius:50%;position:relative;flex:none}
 .hint-r .orb::after{content:"";position:absolute;left:-2px;top:4px;width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber)}
-.hint-r.b{bottom:11%}
 .hint-r .ring{width:20px;height:20px;border:1px solid var(--amber-2);border-radius:50%;position:relative;flex:none}
 .hint-r .ring::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid var(--amber-2)}
 .loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--disp);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ivory-dim);transition:opacity .5s}
 .loading.done{opacity:0}
-/* ---------------- stat bar ---------------- */
-.stats{margin-top:30px;border-top:1px solid var(--hair-2);border-bottom:1px solid var(--hair-2)}
-.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr) auto;align-items:center}
-.stat{padding:26px 34px;border-left:1px solid var(--hair-2)}
+.stats{margin-top:26px;border-top:1px solid var(--hair-2);border-bottom:1px solid var(--hair-2);grid-column:1/-1}
+.stats-in{display:grid;grid-template-columns:repeat(4,1fr) auto;align-items:center}
+.stat{padding:20px 30px;border-left:1px solid var(--hair-2)}
 .stat:first-child{border-left:0;padding-left:0}
-.stat b{display:block;font-family:var(--disp);font-weight:500;font-size:34px;letter-spacing:.02em;color:var(--amber-2);line-height:1}
+.stat b{display:block;font-family:var(--disp);font-weight:500;font-size:30px;letter-spacing:.02em;color:var(--amber-2);line-height:1}
 .stat.plain b{color:var(--ivory)}
-.stat span{display:block;margin-top:9px;font-family:var(--disp);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
-.stats a.more{padding:26px 0 26px 34px;border-left:1px solid var(--hair-2);font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2);white-space:nowrap}
+.stat span{display:block;margin-top:8px;font-family:var(--disp);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.stats a.more{padding:20px 0 20px 30px;border-left:1px solid var(--hair-2);font-family:var(--disp);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-2);white-space:nowrap}
 .stats a.more:hover{color:var(--amber-hi)}
-/* ---------------- sections ---------------- */
-section{padding:110px 0;border-bottom:1px solid var(--hair-3)}
-.sec-h{display:flex;align-items:baseline;gap:20px;margin-bottom:52px}
+/* ---------------- section heads ---------------- */
+.sec-h{display:flex;align-items:baseline;gap:20px;margin-bottom:38px}
 .sec-h em{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--amber);letter-spacing:.1em}
 .sec-h h2{font-family:var(--head);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.012em;color:#f6ecd6}
 .sec-h p{margin-left:auto;max-width:38ch;font-size:13.5px;line-height:1.7;color:var(--ivory-dim)}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
-.card{background:var(--bg);padding:34px 30px 36px}
-.card .n{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em}
-.card h3{margin:16px 0 12px;font-family:var(--disp);font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory)}
-.card p{font-size:13.5px;line-height:1.75;color:var(--ivory-dim)}
-.card .eq{margin-top:18px;padding:12px 14px;border:1px solid var(--hair-2);border-radius:2px;font-size:12px;color:var(--amber-2);overflow-x:auto;white-space:nowrap}
-/* field notes */
-.notes{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:start}
+/* ---------------- 01 experiment: interactive ---------------- */
+.exp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:52px;align-items:center}
+.lab-card{border:1px solid var(--hair-2);border-radius:4px;background:rgba(8,6,3,.5);padding:20px 22px 22px}
+.lab-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.lab-head h3{font-family:var(--disp);font-size:14px;letter-spacing:.26em;text-transform:uppercase}
+.lab-head span{font-size:11px;color:var(--ivory-dim)}
+.wbig{position:relative}
+#wbig{width:100%;aspect-ratio:1.35;border:1px solid var(--hair-2);background:#030201;cursor:crosshair;display:block}
+.wread{display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--ivory-dim)}
+.wread b{color:var(--amber-2);font-weight:500}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--hair-2)}
+.ctl .k{font-family:var(--disp);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-dim);white-space:nowrap}
+.ctl output{font-family:var(--disp);font-size:15px;color:var(--amber-2);min-width:52px;text-align:right}
+.seg{display:flex;gap:6px}
+.seg button{width:44px;height:32px;border:1px solid var(--hair);border-radius:2px;font-family:var(--disp);font-size:14px;color:var(--ivory-dim);background:rgba(0,0,0,.3)}
+.seg button.on{color:var(--amber-hi);border-color:var(--amber);background:rgba(255,157,24,.12)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:5px;height:16px;margin-top:-7px;border-radius:1px;background:var(--amber-hi);box-shadow:0 0 0 2px rgba(5,4,3,.9),0 0 10px rgba(255,157,24,.7)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:5px;height:16px;border:0;border-radius:1px;background:var(--amber-hi)}
+.exp-notes{display:flex;flex-direction:column;gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
+.enote{background:var(--bg);padding:22px 24px}
+.enote .n{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em}
+.enote h3{margin:12px 0 9px;font-family:var(--disp);font-size:17px;letter-spacing:.14em;text-transform:uppercase;color:var(--ivory)}
+.enote p{font-size:13px;line-height:1.7;color:var(--ivory-dim)}
+.enote .eq{margin-top:12px;padding:9px 12px;border:1px solid var(--hair-2);border-radius:2px;font-size:11.5px;color:var(--amber-2);overflow-x:auto;white-space:nowrap}
+/* ---------------- 02 field notes ---------------- */
+.notes{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:48px;align-items:center}
+.portrait{position:relative;border:1px solid var(--hair-2);border-radius:4px;overflow:hidden;aspect-ratio:4/5;background:#070502}
+.portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 28%;mix-blend-mode:screen;opacity:.95}
+.portrait .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(5,4,3,.85) 100%)}
+.portrait .tag{position:absolute;left:18px;bottom:16px;right:18px;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--disp);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim)}
+.portrait .tag b{color:var(--amber-2);font-size:13px}
+.portrait .bkm{position:absolute;width:16px;height:16px;border:0}
+.portrait .bkm::before,.portrait .bkm::after{content:"";position:absolute;background:var(--amber);opacity:.7}
+.portrait .bkm::before{width:100%;height:1px}.portrait .bkm::after{width:1px;height:100%}
+.portrait .bkm.a{left:12px;top:12px}.portrait .bkm.b{right:12px;top:12px}
+.portrait .bkm.b::before,.portrait .bkm.b::after{right:0}
 blockquote{border-left:2px solid var(--amber);padding:8px 0 8px 26px;font-size:clamp(17px,1.7vw,23px);line-height:1.5;color:var(--ivory);font-style:italic}
-blockquote cite{display:block;margin-top:16px;font-style:normal;font-family:var(--disp);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-dim)}
+blockquote cite{display:block;margin-top:14px;font-style:normal;font-family:var(--disp);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory-dim)}
 blockquote cite a{color:var(--amber-2)}
-.notes p{margin-top:24px;font-size:14px;line-height:1.8;color:var(--ivory-dim)}
-.tline{list-style:none}
-.tline li{display:grid;grid-template-columns:66px 1fr;gap:22px;padding:17px 0;border-top:1px solid var(--hair-2);font-size:13.5px;line-height:1.65;color:var(--ivory-dim)}
+.notes p.lede{margin-top:20px;font-size:14px;line-height:1.8;color:var(--ivory-dim)}
+.tline{list-style:none;margin-top:26px}
+.tline li{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:13px 0;border-top:1px solid var(--hair-2);font-size:13px;line-height:1.6;color:var(--ivory-dim);cursor:default;transition:color .2s,background .2s;padding-left:8px;margin-left:-8px}
 .tline li:last-child{border-bottom:1px solid var(--hair-2)}
-.tline b{font-family:var(--disp);font-size:17px;color:var(--amber-2);letter-spacing:.06em}
+.tline li:hover{color:var(--ivory);background:rgba(255,157,24,.04)}
+.tline b{font-family:var(--disp);font-size:16px;color:var(--amber-2);letter-spacing:.06em}
 .tline li.now{color:var(--ivory)}
-/* methodology */
+.tline li.now b{color:var(--amber-hi)}
+/* ---------------- 03 methodology ---------------- */
 .meth{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair-2);border:1px solid var(--hair-2)}
-.meth>div{background:var(--bg);padding:32px 30px}
-.meth h3{font-family:var(--disp);font-size:13px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:20px}
+.meth>div{background:rgba(5,4,3,.86);padding:26px 28px}
+.meth h3{font-family:var(--disp);font-size:13px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:16px}
 .meth h3.ok{color:var(--amber-2)}.meth h3.no{color:var(--ivory-dim)}
-.meth ul{list-style:none;font-size:13.5px;line-height:1.7}
-.meth li{padding:11px 0 11px 24px;border-top:1px solid var(--hair-3);position:relative;color:var(--ivory-dim)}
+.meth ul{list-style:none;font-size:13px;line-height:1.65}
+.meth li{padding:10px 0 10px 24px;border-top:1px solid var(--hair-3);position:relative;color:var(--ivory-dim)}
 .meth li:first-child{border-top:0}
-.meth li::before{position:absolute;left:0;top:11px;font-size:12px}
+.meth li::before{position:absolute;left:0;top:10px;font-size:12px}
 .meth .ok+ul li::before{content:"✓";color:var(--amber)}
 .meth .no+ul li::before{content:"·";color:var(--ivory-dim);left:4px}
 .meth li b{color:var(--ivory);font-weight:500}
-.paper{margin-top:44px;padding:32px 34px;border:1px solid var(--hair-2);border-radius:3px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
-.paper .cap{margin-bottom:12px}
-.paper h4{font-family:var(--head);font-weight:600;font-size:19px;line-height:1.4;color:var(--ivory);max-width:52ch}
-.paper p{margin-top:12px;font-size:13px;color:var(--ivory-dim);line-height:1.7;max-width:62ch}
-/* footer cta */
-.fcta{padding:120px 0 110px;text-align:center;border-bottom:1px solid var(--hair-3)}
-.fcta h2{font-family:var(--head);font-weight:800;font-size:clamp(32px,4.4vw,62px);letter-spacing:-.02em;line-height:1.03;color:#f6ecd6}
-.fcta p{margin:22px auto 40px;max-width:50ch;font-size:14.5px;line-height:1.75;color:var(--ivory-dim)}
-footer{padding:40px 0 calc(40px + var(--sab));display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.paper{margin-top:26px;padding:24px 28px;border:1px solid var(--hair-2);border-radius:3px;background:rgba(5,4,3,.86);display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
+.paper h4{font-family:var(--head);font-weight:600;font-size:17px;line-height:1.4;color:var(--ivory);max-width:54ch}
+.paper p{margin-top:10px;font-size:12.5px;color:var(--ivory-dim);line-height:1.65;max-width:70ch}
+/* ---------------- 04 enter ---------------- */
+#enter{text-align:center}
+#enter h2{font-family:var(--head);font-weight:800;font-size:clamp(32px,4.4vw,62px);letter-spacing:-.02em;line-height:1.03;color:#f6ecd6}
+#enter .lede{margin:20px auto 0;max-width:50ch;font-size:14.5px;line-height:1.75;color:var(--ivory-dim)}
+.peek{margin:34px auto 0;max-width:560px;border:1px solid var(--hair-2);border-radius:4px;background:rgba(8,6,3,.6);padding:24px 26px}
+.peek .h{font-family:var(--disp);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--ivory-dim)}
+.peek .out{margin:16px 0 6px;font-family:var(--head);font-weight:800;font-size:44px;letter-spacing:.22em;color:var(--amber-hi);min-height:52px;line-height:1;transition:opacity .25s}
+.peek .out.empty{font-family:var(--disp);font-weight:400;font-size:15px;letter-spacing:.16em;color:var(--ivory-dim)}
+.peek .sub{font-size:12px;color:var(--ivory-dim);min-height:18px}
+.peek .tally{display:flex;justify-content:center;gap:5px;margin-top:16px;min-height:26px;align-items:flex-end}
+.peek .tally i{width:10px;background:var(--amber);opacity:.85;border-radius:1px;transition:height .3s}
+.peek .tally-l{margin-top:8px;font-size:10.5px;color:rgba(242,230,201,.34)}
+.peek button{margin-top:18px}
+footer{padding:26px 0 calc(20px + var(--sab));display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--hair-3);margin-top:auto}
 footer .cap{font-size:10.5px}
 footer a:hover{color:var(--amber-hi)}
+/* ---------------- fit-to-viewport compaction ---------------- */
+.panel{padding:calc(var(--nav) + 20px) 0 24px}
+.sec-h{margin-bottom:26px}
+.lab-card{padding:16px 18px 18px}
+.lab-head{margin-bottom:12px}
+#wbig{aspect-ratio:1.72}
+.wread{margin-top:8px;font-size:11.5px}
+.ctl{margin-top:12px;padding-top:12px;gap:12px}
+.seg button{height:29px;width:40px}
+.enote{padding:15px 20px}
+.enote h3{margin:9px 0 7px;font-size:15px}
+.enote p{font-size:12.5px;line-height:1.62}
+.enote .eq{margin-top:9px;padding:7px 10px;font-size:11px}
+.portrait{aspect-ratio:3/4;max-height:min(62vh,560px);margin:0 auto}
+blockquote{font-size:clamp(15px,1.45vw,20px);padding-left:22px}
+blockquote cite{margin-top:11px;font-size:11px}
+.notes p.lede{margin-top:16px;font-size:13px;line-height:1.7}
+.tline{margin-top:18px}
+.tline li{padding:9px 0 9px 8px;font-size:12.5px;gap:16px;grid-template-columns:56px 1fr}
+.tline b{font-size:15px}
+.meth>div{padding:22px 24px}
+.meth li{padding:8px 0 8px 22px;font-size:12.5px;line-height:1.6}
+.meth h3{margin-bottom:12px}
+.paper{margin-top:20px;padding:20px 24px}
+.paper h4{font-size:16px}
+.paper p{font-size:12px;margin-top:8px}
+#enter .lede{margin-top:16px;font-size:13.5px}
+.peek{margin-top:26px;padding:20px 24px}
+.peek .out{margin:12px 0 5px;font-size:38px;min-height:44px}
+@media (max-height:820px) and (min-width:1081px){
+  .sec-h{margin-bottom:18px}
+  .sec-h h2{font-size:clamp(22px,2.4vw,32px)}
+  #wbig{aspect-ratio:2}
+  .enote{padding:12px 18px}
+  .enote p{font-size:12px;line-height:1.55}
+  .enote .eq{display:none}
+  .tline li{padding:7px 0 7px 8px;font-size:12px}
+  .notes p.lede{display:none}
+  .meth li{padding:7px 0 7px 22px;font-size:12px}
+  .paper p{display:none}
+}
+#enter .bg img{opacity:.30}
+#methodology .bg img{opacity:.32}
+.meth>div,.paper{background:rgba(5,4,3,.9)}
 /* reveal */
-.rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
 .rv.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){ .rv{opacity:1;transform:none;transition:none} html{scroll-behavior:auto} }
+@media (prefers-reduced-motion:reduce){ .rv{opacity:1;transform:none;transition:none} html{scroll-behavior:auto;scroll-snap-type:none} }
 /* ---------------- responsive ---------------- */
-@media (max-width:1240px){
-  .wrap{padding:0 28px}
-  .nav ul{gap:24px}
-  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:24px}
-  .hero-box{height:min(58vh,540px)}
-  .watermark{top:-26px}
-  .notes{grid-template-columns:1fr;gap:44px}
-  .stats .wrap{grid-template-columns:repeat(2,1fr)}
-  .stat{padding:20px 24px}
+@media (max-width:1300px){
+  .wrap{padding:0 26px}
+  .nav ul{gap:22px}
+  .exp,.notes{gap:34px}
+  .rail{right:12px}
+}
+@media (max-width:1080px){
+  html{scroll-snap-type:none}
+  .panel{min-height:auto;padding:calc(var(--nav) + 44px) 0 56px}
+  #top{min-height:100dvh}
+  #top .wrap{grid-template-columns:minmax(0,1fr);gap:26px}
+  .hero-box{height:min(52vh,470px)}
+  .watermark{top:-34px}
+  .exp,.notes,.meth{grid-template-columns:minmax(0,1fr)}
+  .portrait{aspect-ratio:4/5;max-height:52vh;max-width:min(380px,80vw)}
+  .rail{display:none}
+  .stats-in{grid-template-columns:repeat(2,1fr)}
+  .stat{padding:16px 20px}
   .stat:nth-child(odd){border-left:0;padding-left:0}
   .stat:nth-child(n+3){border-top:1px solid var(--hair-2)}
-  .stats a.more{grid-column:1/-1;border-left:0;border-top:1px solid var(--hair-2);padding:20px 0}
-}
-@media (max-width:900px){
-  .nav ul{display:none}
-  .grid3,.meth{grid-template-columns:1fr}
-  .paper{grid-template-columns:1fr;gap:22px}
-  section{padding:76px 0}
-  .sec-h{flex-direction:column;gap:14px;margin-bottom:34px}
+  .stats a.more{grid-column:1/-1;border-left:0;border-top:1px solid var(--hair-2);padding:16px 0}
+  .paper{grid-template-columns:1fr;gap:20px}
+  .sec-h{flex-direction:column;gap:12px;margin-bottom:28px}
   .sec-h p{margin-left:0}
 }
+@media (max-width:900px){ .nav ul{display:none} }
 @media (max-width:640px){
   .wrap{padding:0 18px}
-  .nav .wrap{height:60px}
   .nav .sys{display:none}
   .brand{font-size:14px;letter-spacing:.24em}
-  .hero{padding:22px 0 0}
-  .hero .wrap{min-height:0}
-  .hero-box{height:min(52vh,430px);min-height:320px}
-  .wig-inset{width:96px;right:4%;top:8%}
+  .hero-box{height:min(46vh,380px);min-height:300px}
+  .wig-inset{width:92px;right:4%;top:8%}
   .wig-inset .lg{display:none}
   .psi{left:8%}
   .axz,.axx{display:none}
-  .hint-r{font-size:10px;letter-spacing:.16em;right:4%}
-  .hero-cta .btn{flex:1 1 100%}
-  .stat b{font-size:27px}
+  .hint-r{font-size:10px;letter-spacing:.14em;right:4%}
+  .cta-row .btn{flex:1 1 100%}
+  .stat b{font-size:25px}
   .bk{width:18px;height:18px}
-  .hero-mark{display:none}
+  .ctl{grid-template-columns:auto 1fr;row-gap:8px}
+  .ctl output{grid-column:2;text-align:left}
+  .peek .out{font-size:32px}
 }
 </style>
 </head>
@@ -210,18 +307,25 @@ footer a:hover{color:var(--amber-hi)}
   </div>
 </nav>
 
-<header class="hero" id="top">
-  <div class="wrap">
-    <i class="bk tl"></i><i class="bk tr"></i><i class="bk bl"></i><i class="bk br"></i>
-    <span class="hero-mark a">X: −3.0</span><span class="hero-mark b">Y: 2.0</span>
+<div class="rail" id="rail">
+  <button data-go="top"><span>Hero</span><i></i></button>
+  <button data-go="experiment"><span>Experiment</span><i></i></button>
+  <button data-go="notes"><span>Field notes</span><i></i></button>
+  <button data-go="methodology"><span>Methodology</span><i></i></button>
+  <button data-go="enter"><span>Enter</span><i></i></button>
+</div>
 
+<!-- ============ 00 HERO ============ -->
+<section class="panel" id="top">
+  <i class="bk tl"></i><i class="bk tr"></i><i class="bk bl"></i><i class="bk br"></i>
+  <div class="wrap">
     <div class="hero-copy">
       <span class="watermark">W(x, p)</span>
       <h1>She's been in superposition since 2023.</h1>
       <p class="hero-sub">A live phase-space experiment exploring coherence, interference and the moment observation becomes reality.</p>
-      <div class="hero-cta">
+      <div class="cta-row">
         <a class="btn solid" href="lab.html">Enter the chamber <span aria-hidden="true">→</span></a>
-        <a class="btn" href="https://journals.aps.org/prx/" target="_blank" rel="noopener">Read the paper</a>
+        <a class="btn" href="#experiment">See the physics</a>
       </div>
       <p class="hero-note"><b>WebGL 2.0</b> · Runs in your browser · No signup</p>
     </div>
@@ -236,73 +340,103 @@ footer a:hover{color:var(--amber-hi)}
         <div class="axx"><span>−3</span><span>−2</span><span>−1</span><span>0</span><span>1</span><span>2</span><span>3</span></div>
         <div class="psi">|ψ⟩<i></i></div>
         <div class="wig-inset"><div class="t">W(x, p)</div><canvas id="wig" width="200" height="200"></canvas><span class="lg"></span></div>
-        <div class="hint-r"><span class="orb"></span>Drag to rotate</div>
-        <div class="hint-r b"><span class="ring"></span>Unobserved / coherent</div>
+        <div class="hint-r a"><span class="orb"></span>Drag to rotate</div>
+        <div class="hint-r b"><span class="ring"></span><span id="coh-l">Unobserved / coherent</span></div>
       </div>
     </div>
-  </div>
-</header>
 
-<div class="stats">
-  <div class="wrap">
-    <div class="stat plain"><b id="k-n">06</b><span>Components</span></div>
-    <div class="stat"><b id="k-pur">0.984</b><span>Purity</span></div>
-    <div class="stat"><b id="k-neg">−0.312</b><span>Negativity</span></div>
-    <div class="stat plain"><b id="k-t">30:00</b><span>Observation window</span></div>
-    <a class="more" href="lab.html">View live telemetry <span aria-hidden="true">→</span></a>
-  </div>
-</div>
-
-<main>
-<section id="experiment">
-  <div class="wrap">
-    <div class="sec-h rv"><em>01</em><h2>The experiment</h2><p>Not an animation of a cat state — an actual one, evaluated on a grid every frame and drawn from the numbers it produces.</p></div>
-    <div class="grid3 rv">
-      <div class="card">
-        <span class="n">01 / STATE</span>
-        <h3>A real cat state</h3>
-        <p>The chamber holds an equal superposition of <em>N</em> coherent states arranged on a ring in phase space. Separation, squeeze, phase and the number of components are yours to set; the state is rebuilt from them.</p>
-        <div class="eq">|ψ⟩ = 𝒩 · S(r) · Σₖ |α e^(i(2πk/N + φ))⟩</div>
-      </div>
-      <div class="card">
-        <span class="n">02 / EVIDENCE</span>
-        <h3>Wigner negativity</h3>
-        <p>The distribution over phase space is computed on a 96×96 grid, cross terms kept. Where it goes negative, no classical probability distribution can follow it. That negativity is the proof the box holds a superposition and not a mixture.</p>
-        <div class="eq">∫<sub>W&lt;0</sub> |W| d²β &nbsp;→&nbsp; 1/π for a two-lobe cat</div>
-      </div>
-      <div class="card">
-        <span class="n">03 / COLLAPSE</span>
-        <h3>Measurement, honestly</h3>
-        <p>Pressing observe draws one sample from the marginal P(x) — the real distribution, not a coin flip over two labels. Repeat it two hundred times and the histogram converges to the curve it came from.</p>
-        <div class="eq">x ~ P(x) = ∫ W(x,p) dp</div>
+    <div class="stats">
+      <div class="stats-in">
+        <div class="stat plain"><b id="k-n">06</b><span>Components</span></div>
+        <div class="stat"><b id="k-pur">0.984</b><span>Purity</span></div>
+        <div class="stat"><b id="k-neg">−0.312</b><span>Negativity</span></div>
+        <div class="stat plain"><b id="k-t">30:00</b><span>Observation window</span></div>
+        <a class="more" href="lab.html">View live telemetry <span aria-hidden="true">→</span></a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="notes">
+<!-- ============ 01 EXPERIMENT ============ -->
+<section class="panel" id="experiment">
+  <div class="bg"><img src="assets/land/optics.webp" alt="" onerror="this.remove()"></div>
+  <div class="wrap">
+    <div class="sec-h rv"><em>01</em><h2>The experiment</h2><p>Not an animation of a cat state — an actual one. Change it here and the chamber above changes with it.</p></div>
+    <div class="exp">
+      <div class="lab-card rv">
+        <div class="lab-head"><h3>Wigner W(x,p)</h3><span id="w-grid">96 × 96 grid</span></div>
+        <div class="wbig"><canvas id="wbig" width="540" height="400" aria-label="Interactive Wigner distribution"></canvas></div>
+        <div class="wread"><span id="w-hint">Hover the plot to read the distribution</span><b id="w-val">—</b></div>
+        <div class="ctl">
+          <span class="k">Components</span>
+          <span class="seg" id="seg-n"><button data-n="2">2</button><button data-n="3">3</button><button data-n="6" class="on">6</button></span>
+          <output id="o-n">N = 6</output>
+        </div>
+        <div class="ctl">
+          <span class="k">Separation α</span>
+          <input type="range" id="r-sep" min="1.2" max="6" step="0.05" value="3.2" aria-label="Separation alpha">
+          <output id="o-sep">3.20</output>
+        </div>
+        <div class="ctl">
+          <span class="k">Decoherence κ</span>
+          <input type="range" id="r-ka" min="0" max="1" step="0.005" value="0.02" aria-label="Decoherence kappa">
+          <output id="o-ka">0.020</output>
+        </div>
+      </div>
+      <div class="exp-notes rv">
+        <div class="enote">
+          <span class="n">01 / STATE</span>
+          <h3>A real cat state</h3>
+          <p>An equal superposition of <em>N</em> coherent states on a ring in phase space. The lobes you see are the components; the ripples between them are interference, and they only exist because the cross terms are kept.</p>
+          <div class="eq">|ψ⟩ = 𝒩 · S(r) · Σₖ |α e^(i(2πk/N + φ))⟩</div>
+        </div>
+        <div class="enote">
+          <span class="n">02 / EVIDENCE</span>
+          <h3>Wigner negativity</h3>
+          <p>Push κ up and watch the fringes die while the lobes survive. That is decoherence: the parts stay, the <em>betweenness</em> goes. Negativity falls to zero and the state becomes an ordinary mixture.</p>
+          <div class="eq">∫<sub>W&lt;0</sub> |W| d²β &nbsp;→&nbsp; 1/π for a two-lobe cat</div>
+        </div>
+        <div class="enote">
+          <span class="n">03 / COLLAPSE</span>
+          <h3>Measurement, honestly</h3>
+          <p>Observing draws one sample from the marginal P(x) — the real distribution, not a coin flip over two labels. Repeat it and the histogram converges to the curve it came from.</p>
+          <div class="eq">x ~ P(x) = ∫ W(x,p) dp</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 FIELD NOTES ============ -->
+<section class="panel" id="notes">
   <div class="wrap">
     <div class="sec-h rv"><em>02</em><h2>Field notes</h2><p>Why this cat, and why 2023.</p></div>
     <div class="notes">
+      <div class="portrait rv">
+        <img src="assets/land/cat-portrait.webp" alt="A cat dissolving into particles" onerror="this.closest('.portrait').style.display='none'">
+        <span class="ov"></span><i class="bkm a"></i><i class="bkm b"></i>
+        <div class="tag"><span>Subject<br><b>Schrödinger</b></span><span>Status<br><b>Unresolved</b></span></div>
+      </div>
       <div class="rv">
         <blockquote>I tried liking our cat, but the feeling wasn't reciprocated. Not even slightly. One day she disappeared. To this day, we don't know if our cat (Schrödinger), is alive or dead.
           <cite>Elon Musk · 17 Sep 2023 · <a href="https://x.com/elonmusk/status/1703330562356957232" target="_blank" rel="noopener">x.com</a></cite>
         </blockquote>
-        <p>A cat named Schrödinger walked off and never resolved. It is the only Schrödinger's cat anyone has actually had to live with — an unresolved state with a name, a food bowl and a household that stopped waiting.</p>
-        <p>Three years later, a group in Oxford showed that the thought experiment had been too modest all along. A superposition does not have to be two of the same thing in two places. Its parts can be things with no classical version at all. The box was never a question with two answers.</p>
+        <p class="lede">A cat named Schrödinger walked off and never resolved. It is the only Schrödinger's cat anyone has had to actually live with — an unresolved state with a name, a food bowl, and a household that stopped waiting.</p>
+        <ul class="tline">
+          <li><b>1935</b><span>Schrödinger publishes the cat — as an argument against taking superposition literally.</span></li>
+          <li><b>1996</b><span>Monroe, Meekhof, King &amp; Wineland build the first real cat state from a single trapped ion.</span></li>
+          <li><b>2018</b><span>"We have a big dog called Gatsby, a little dog called Marvin the Martian &amp; a cat named Schrödinger."</span></li>
+          <li><b>2023</b><span>She disappears. State unresolved.</span></li>
+          <li class="now"><b>2026</b><span>Oxford builds cat states whose components are themselves non-classical. Sixfold symmetry, Wigner negativity confirmed.</span></li>
+        </ul>
       </div>
-      <ul class="tline rv">
-        <li><b>1935</b><span>Schrödinger publishes the cat — as an argument against taking superposition literally.</span></li>
-        <li><b>1996</b><span>Monroe, Meekhof, King &amp; Wineland build the first real cat state from a single trapped ion.</span></li>
-        <li><b>2018</b><span>"We have a big dog called Gatsby, a little dog called Marvin the Martian &amp; a cat named Schrödinger."</span></li>
-        <li><b>2023</b><span>She disappears. State unresolved.</span></li>
-        <li class="now"><b>2026</b><span>Oxford builds cat states whose components are themselves non-classical — squeezed, trisqueezed, quadsqueezed. Sixfold symmetry, Wigner negativity confirmed.</span></li>
-      </ul>
     </div>
   </div>
 </section>
 
-<section id="methodology">
+<!-- ============ 03 METHODOLOGY ============ -->
+<section class="panel" id="methodology">
+  <div class="bg"><img src="assets/land/ion-trap.webp" alt="" onerror="this.remove()"></div>
   <div class="wrap">
     <div class="sec-h rv"><em>03</em><h2>Methodology</h2><p>What is computed and what is drawn. The line between them is the whole point.</p></div>
     <div class="meth rv">
@@ -319,16 +453,16 @@ footer a:hover{color:var(--amber-hi)}
       <div>
         <h3 class="no">Illustrative</h3>
         <ul>
-          <li><b>The cat</b> — a generated 3D mesh rendered as a hologram: wireframe, Fresnel shell, and particles sampled from its surface.</li>
+          <li><b>The cat</b> — a generated 3D mesh rendered as a hologram: wireframe, Fresnel shell, particles sampled from its surface.</li>
           <li><b>Its copies</b> — placed by the same α, φ, N and κ that drive the physics, but they are a picture of the state, not the state.</li>
           <li><b>Breathing, head and tail motion</b> — procedural. The model has no rig.</li>
-          <li><b>The chamber</b> — grids, scan plane and wavefront rings are scene dressing.</li>
+          <li><b>The chamber and these backdrops</b> — grids, scan plane, rings and generated imagery are scene dressing.</li>
         </ul>
       </div>
     </div>
     <div class="paper rv">
       <div>
-        <div class="cap">The paper</div>
+        <div class="cap" style="margin-bottom:10px">The paper</div>
         <h4>Generating Arbitrary Superpositions of Nonclassical Quantum Harmonic Oscillator States</h4>
         <p>S. Saner, O. Băzăvan, D. J. Webb, G. Araneda, D. M. Lucas, C. J. Ballance, R. Srinivas — <em>Phys. Rev. X</em> <b>16</b>, 021049 (2026). A single trapped strontium ion, a mid-circuit measurement, and a superposition sculpted into a shape nobody had made before. “This approach gave us a tool to sculpt the quantum superposition into almost any shape.”</p>
       </div>
@@ -337,76 +471,152 @@ footer a:hover{color:var(--amber-hi)}
   </div>
 </section>
 
-<section class="fcta">
+<!-- ============ 04 ENTER ============ -->
+<section class="panel" id="enter">
+  <div class="bg"><img src="assets/land/sealed-box.webp" alt="" onerror="this.remove()"></div>
   <div class="wrap">
     <h2 class="rv">Open the box.</h2>
-    <p class="rv">Sculpt the state, watch the fringes, and decide when to look. The instrument has every number this page is quoting — and the one control that ends the superposition.</p>
-    <div class="hero-cta rv" style="justify-content:center">
+    <p class="lede rv">Sculpt the state, watch the fringes, and decide when to look. Or take one measurement right here — a real sample from the distribution above.</p>
+
+    <div class="peek rv">
+      <div class="h">Single measurement</div>
+      <div class="out empty" id="peek-out">Nothing has been observed yet</div>
+      <div class="sub" id="peek-sub">The state is coherent. Looking will end that.</div>
+      <div class="tally" id="peek-tally"></div>
+      <div class="tally-l" id="peek-l">Every result is drawn from P(x) = ∫W dp</div>
+      <button class="btn" id="peek-btn">Look inside</button>
+    </div>
+
+    <div class="cta-row rv" style="justify-content:center;margin-top:38px">
       <a class="btn solid" href="lab.html">Enter the chamber <span aria-hidden="true">→</span></a>
       <a class="btn" href="https://github.com/steveindustries90/schrodingers-box" target="_blank" rel="noopener">Source on GitHub</a>
     </div>
   </div>
-</section>
-</main>
-
-<footer>
-  <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+  <div class="wrap"><footer>
     <span class="cap">Schrödinger's Box · MIT licensed · Physics real, cat illustrative</span>
     <span class="cap"><a href="lab.html">Lab</a> · <a href="https://github.com/steveindustries90/schrodingers-box" target="_blank" rel="noopener">GitHub</a> · <a href="https://journals.aps.org/prx/" target="_blank" rel="noopener">PRX 16, 021049</a></span>
-  </div>
-</footer>
+  </footer></div>
+</section>
 
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module">
-import { S, M, reduced, computeWigner, paintWigner } from './js/physics.js';
+import { S, M, W, G, wRange, reduced, computeWigner, wAt, sampleX, nearestBranch, paintWigner, colormap } from './js/physics.js';
 import { initGL, resize, buildCatGLB, buildCatPNG, updateScene, attachPointer, gl } from './js/chamber.js';
 
 const $ = id=>document.getElementById(id);
 const chamber=$('chamber'), glc=$('gl');
-
-/* landing preset: calmer, wider framing, no observe */
 S.orbitAuto=true; S.zoom=1; S.grain=0.038; S.bloom=0.42;
 
-/* ---- scroll reveals ---- */
-const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.14});
+/* ---------- reveals ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.12});
 document.querySelectorAll('.rv').forEach((el,i)=>{ el.style.transitionDelay=(i%3)*70+'ms'; io.observe(el); });
 
-/* ---- only render while the hero is on screen ---- */
-let visible=true;
-new IntersectionObserver(es=>{ visible=es[0].isIntersecting; },{threshold:.02}).observe(chamber);
+/* ---------- progress rail + nav highlight ---------- */
+const panels=[...document.querySelectorAll('.panel')];
+const railBtns=[...document.querySelectorAll('#rail button')];
+railBtns.forEach(b=>b.addEventListener('click',()=>$(b.dataset.go).scrollIntoView({behavior:'smooth'})));
+const navLinks=[...document.querySelectorAll('.nav ul a')];
+const spy=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const id=e.target.id;
+    railBtns.forEach(b=>b.classList.toggle('on',b.dataset.go===id));
+    navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));
+  });
+},{threshold:.45});
+panels.forEach(p=>spy.observe(p));
 
-/* ---- physics refresh + stat bar ---- */
-let wDirty=true;
+/* ---------- render only while the chamber is on screen ---------- */
+let heroVisible=true;
+new IntersectionObserver(es=>{ heroVisible=es[0].isIntersecting; },{threshold:.02}).observe(chamber);
+
+/* ---------- the big interactive Wigner ---------- */
+const wb=$('wbig'), wctx=wb.getContext('2d');
+const off=document.createElement('canvas'); off.width=off.height=G; const octx=off.getContext('2d');
+let wImg=octx.createImageData(G,G);
+function drawBig(){
+  const mx=Math.max(1e-6,M.lobe*1.15); const d=wImg.data;
+  for(let i=0;i<G*G;i++){ const [r,g,b]=colormap(Math.max(-1,Math.min(1,W[i]/mx))); d[i*4]=r; d[i*4+1]=g; d[i*4+2]=b; d[i*4+3]=255; }
+  octx.putImageData(wImg,0,0);
+  const w=wb.width,h=wb.height;
+  wctx.clearRect(0,0,w,h); wctx.imageSmoothingEnabled=true; wctx.drawImage(off,0,0,w,h);
+  wctx.strokeStyle='rgba(255,157,24,.13)'; wctx.lineWidth=1;
+  for(let i=1;i<8;i++){ const x=Math.round(i*w/8)+.5; wctx.beginPath(); wctx.moveTo(x,0); wctx.lineTo(x,h); wctx.stroke(); }
+  for(let i=1;i<6;i++){ const y=Math.round(i*h/6)+.5; wctx.beginPath(); wctx.moveTo(0,y); wctx.lineTo(w,y); wctx.stroke(); }
+  wctx.strokeStyle='rgba(255,181,71,.45)'; wctx.beginPath(); wctx.moveTo(w/2+.5,0); wctx.lineTo(w/2+.5,h); wctx.moveTo(0,h/2+.5); wctx.lineTo(w,h/2+.5); wctx.stroke();
+  wctx.fillStyle='rgba(242,230,201,.55)'; wctx.font='11px IBM Plex Mono, monospace';
+  wctx.fillText('−'+wRange.toFixed(0),6,h-7); wctx.fillText('+'+wRange.toFixed(0),w-30,h-7); wctx.fillText('p',6,15); wctx.fillText('x',w-14,h-7);
+}
+function wigHover(e){
+  const r=wb.getBoundingClientRect();
+  const cx=((e.clientX-r.left)/r.width)*2-1, cy=1-((e.clientY-r.top)/r.height)*2;
+  const x=cx*wRange, p=cy*wRange, v=wAt(x,p);
+  $('w-val').textContent=`W(${x.toFixed(2)}, ${p.toFixed(2)}) = ${v.toFixed(4)}`;
+  $('w-hint').textContent = v<0 ? 'negative — impossible for a classical distribution' : 'positive region';
+}
+wb.addEventListener('pointermove',wigHover);
+wb.addEventListener('pointerleave',()=>{ $('w-val').textContent='—'; $('w-hint').textContent='Hover the plot to read the distribution'; });
+
+/* ---------- controls (drive the same state as the hero chamber) ---------- */
+let dirty=true;
+$('seg-n').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  [...$('seg-n').children].forEach(x=>x.classList.toggle('on',x===b));
+  S.N=+b.dataset.n; $('o-n').textContent='N = '+S.N; dirty=true; });
+$('r-sep').addEventListener('input',e=>{ S.sep=+e.target.value; $('o-sep').textContent=S.sep.toFixed(2); dirty=true; });
+$('r-ka').addEventListener('input',e=>{ S.ka=+e.target.value; $('o-ka').textContent=S.ka.toFixed(3); dirty=true; });
+
+/* ---------- stat bar + physics refresh ---------- */
 function refresh(){
   computeWigner();
   paintWigner($('wig'),{grid:4});
+  drawBig();
   $('k-neg').textContent=(M.neg<0?'−':'')+Math.abs(M.neg).toFixed(3);
   $('k-pur').textContent=M.pur.toFixed(3);
   $('k-n').textContent=String(S.N).padStart(2,'0');
-  wDirty=false;
+  $('w-grid').textContent=G+' × '+G+' grid';
+  dirty=false;
 }
 
-/* ---- frame loop ---- */
+/* ---------- single measurement ---------- */
+const hist=[];
+$('peek-btn').addEventListener('click',()=>{
+  if(dirty) refresh();
+  const x=sampleX(), k=nearestBranch(x);
+  const alive=(k%2===0);
+  hist.push(k);
+  const out=$('peek-out'); out.classList.remove('empty');
+  out.style.opacity=0;
+  setTimeout(()=>{ out.textContent=alive?'ALIVE':'DEAD'; out.style.opacity=1; },120);
+  $('peek-sub').textContent=`branch ${k+1} of ${S.N} · x = ${x>=0?'+':'−'}${Math.abs(x).toFixed(2)} · sampled from P(x)`;
+  const counts=new Array(S.N).fill(0); hist.forEach(b=>{ if(b<S.N) counts[b]++; });
+  const mx=Math.max(1,...counts);
+  $('peek-tally').innerHTML=counts.map(c=>`<i style="height:${Math.max(2,Math.round(c/mx*26))}px"></i>`).join('');
+  $('peek-l').textContent=`${hist.length} measurement${hist.length===1?'':'s'} · the tally converges to P(x), not to 50/50`;
+  $('coh-l').textContent='Observed / collapsed';
+  setTimeout(()=>{ $('coh-l').textContent='Unobserved / coherent'; },2600);
+});
+
+/* ---------- frame loop ---------- */
 let last=performance.now(), acc=0, n=0, low=0, phDrift=0, tick=0;
 function frame(now){
   requestAnimationFrame(frame);
   const dt=Math.min(.05,(now-last)/1000); last=now;
-  if(document.hidden||!visible) return;
+  if(document.hidden) return;
   acc+=dt; n++;
   if(acc>=.5){ const f=n/acc; acc=0; n=0; if(f<34&&S.quality>0.6){ if(++low>=3){ S.quality-=.15; resize(); low=0; } } else low=0; }
   if(!reduced){ S.t+=dt; S.tau+=dt; }
   const rem=Math.max(0,1800-(S.t%1800));
   $('k-t').textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(Math.floor(rem%60)).padStart(2,'0');
-  if(!reduced){ phDrift+=dt*0.05; if(phDrift>0.03){ S.ph=(S.ph+phDrift)%Math.PI; phDrift=0; wDirty=true; } }
-  if(wDirty && (tick++%3===0)) refresh();
-  updateScene(S.tau);
+  if(!reduced){ phDrift+=dt*0.05; if(phDrift>0.03){ S.ph=(S.ph+phDrift)%Math.PI; phDrift=0; dirty=true; } }
+  if(dirty && (tick++%2===0)) refresh();
+  if(heroVisible) updateScene(S.tau);
 }
 
-/* ---- boot ---- */
+/* ---------- boot ---------- */
 (async()=>{
   refresh();
   if(initGL(glc,chamber,{camScale:0.96,onFail:()=>{ $('loading').textContent='WebGL unavailable'; }})){
-    attachPointer(chamber,{wheel:false});          // wheel stays with the page so scrolling works
+    attachPointer(chamber,{wheel:false});
     try{ await buildCatGLB(); }
     catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud',e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } }
     $('loading').classList.add('done');
