@@ -73,6 +73,21 @@ phase-space fringe scaling in study S-06. See [`hardware/README.md`](hardware/RE
 Until a real job has been run, the study page shows an explicit "awaiting run" state. Simulated
 data is never substituted for hardware data.
 
+## Deploy
+
+Static site, no build step. Two routes:
+
+**Drag and drop.** `python build-netlify.py` writes `netlify-deploy/` and `netlify-deploy.zip`
+(26 files, 4.7 MB; zip 3.4 MB). Drop either onto <https://app.netlify.com/drop>. The zip is written
+with Python's `zipfile` using forward-slash paths on purpose — PowerShell's `Compress-Archive`
+stores backslashes and every file in a subfolder 404s on Netlify.
+
+**Connect the repo.** Point Netlify at this repository; the root `netlify.toml` publishes `.`
+with no build command and sets caching (immutable for `vendor/`, `models/`, `assets/`;
+always-revalidate for HTML and `hardware/runs.json`) plus the `model/gltf-binary` type for the cat.
+
+Both artefacts are gitignored — regenerate with `python build-netlify.py`.
+
 ## Run locally
 
 Any static server — ES modules won't load over `file://`:
