@@ -9,7 +9,7 @@
 <meta property="og:description" content="She's been in superposition since 2023. Sculpt the state. Observe. Collapse.">
 <meta name="theme-color" content="#050403">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#050403; --amber:#ff9d18; --amber-2:#ffb547; --amber-hi:#ffd58a; --ivory:#f2e6c9; --ivory-dim:rgba(242,230,201,.55);
@@ -283,6 +283,82 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
   .deck{height:52px}
   .deck>*{padding:0 10px}
 }
+
+/* ================= full UI pass: instrument grade ================= */
+:root{ --disp:'Barlow Condensed','IBM Plex Mono',sans-serif; }
+.rail h1{font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.32em}
+.rail .right span{font-family:var(--disp);font-size:12px;letter-spacing:.3em}
+.rail .status{font-family:var(--disp);font-size:12px;letter-spacing:.24em}
+.rail .about{font-family:var(--disp);font-size:11px;letter-spacing:.24em}
+.panel .ph{font-family:var(--disp);font-size:11.5px;letter-spacing:.3em;font-weight:500;color:var(--ivory)}
+.panel .ph::before{content:"";display:inline-block;width:3px;height:10px;background:var(--amber);margin-right:10px;vertical-align:-1px}
+.tele dd{font-family:var(--disp);font-size:20px;font-weight:500;letter-spacing:.04em}
+.tele dt{font-family:var(--disp);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.val{font-family:var(--disp);font-size:14px;font-weight:500;letter-spacing:.06em}
+.lab{font-family:var(--disp);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.lab i{font-family:var(--mono);text-transform:none;font-size:12px}
+.seg button{font-family:var(--disp);font-size:13px;letter-spacing:.1em}
+.pf button{font-family:var(--disp);font-size:11px;letter-spacing:.26em}
+#observe{font-family:var(--disp);font-weight:500;font-size:26px;letter-spacing:.42em;position:absolute;overflow:hidden}
+#observe .ring{position:absolute;inset:0;pointer-events:none;opacity:0;background:conic-gradient(from 0deg,rgba(255,157,24,.0),rgba(255,157,24,.35) 40%,rgba(255,157,24,.0) 41%);animation:none}
+#observe.arming .ring{opacity:1;animation:arm .45s linear forwards}
+#observe.arming{color:var(--ivory)}
+@keyframes arm{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.result b{font-family:var(--disp);font-weight:500;font-size:44px;letter-spacing:.38em}
+.result small,.result .k{font-family:var(--disp);letter-spacing:.14em;font-size:12px}
+.deck .tc em{font-family:var(--disp);font-size:16px;letter-spacing:.06em;font-style:normal}
+.deck .st b{font-family:var(--disp);font-size:16px}
+.deck small,.hint,.term .tag,.term .sys{font-family:var(--disp);letter-spacing:.28em;font-size:10px}
+.deck .zoom small{font-size:10px}
+.strip{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:22px;padding:6px 16px;border:1px solid var(--hair-2);border-radius:2px;background:rgba(6,5,3,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:var(--disp);font-size:11px;letter-spacing:.2em;color:var(--ivory-dim);white-space:nowrap;pointer-events:none}
+.strip b{color:var(--amber-2);font-weight:500;letter-spacing:.06em;font-family:var(--mono);font-size:10.5px}
+.bk{position:absolute;width:22px;height:22px;pointer-events:none;opacity:.7}
+.bk::before,.bk::after{content:"";position:absolute;background:var(--amber)}
+.bk::before{width:100%;height:1px}.bk::after{width:1px;height:100%}
+.bk.tl{left:12px;top:12px}.bk.tr{right:12px;top:12px}.bk.bl{left:12px;bottom:12px}.bk.br{right:12px;bottom:12px}
+.bk.tr::before,.bk.br::before{right:0}.bk.tr::after,.bk.br::after{right:0}
+.bk.bl::before,.bk.br::before{bottom:0}.bk.bl::after,.bk.br::after{bottom:0}
+.meter{display:flex;align-items:center;gap:10px;margin:8px 0 6px;font-family:var(--disp);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.meter i{flex:1;height:2px;background:var(--hair-2);position:relative}
+.meter i::after{content:"";position:absolute;left:0;top:0;height:100%;width:var(--w,0%);background:linear-gradient(90deg,var(--amber),var(--amber-hi));box-shadow:0 0 8px rgba(255,157,24,.6);transition:width .3s}
+.spark{margin:6px 0 4px}
+.spark canvas{display:block;width:100%;height:36px;border-bottom:1px solid var(--hair-2)}
+.spark span{display:block;margin-top:4px;font-family:var(--disp);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ivory-dim)}
+.log-h{display:flex;justify-content:space-between;margin:10px 0 4px;font-family:var(--disp);font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ivory-dim)}
+.log-h em{font-style:normal;color:var(--amber-2)}
+.mlog{list-style:none;max-height:76px;overflow:hidden;font-size:10.5px}
+.mlog li{display:grid;grid-template-columns:20px 1fr auto;gap:8px;padding:3px 0;border-top:1px solid rgba(255,157,24,.06);color:var(--ivory-dim)}
+.mlog li b{color:var(--amber-2);font-weight:500}
+.mlog li i{font-style:normal;color:var(--ivory)}
+.mlog li.empty{grid-template-columns:1fr;color:rgba(242,230,201,.3);font-style:italic}
+.wtabs{display:flex;gap:2px}
+.wtabs button{font-family:var(--disp);font-size:11px;letter-spacing:.14em;color:var(--ivory-dim);padding:2px 8px;border:1px solid transparent;border-radius:2px;width:auto;height:auto;line-height:1.3}
+.wtabs button.on{color:var(--amber-hi);border-color:var(--hair);background:rgba(255,157,24,.08)}
+.term{position:relative}
+.thist{position:absolute;left:0;right:0;bottom:100%;max-height:0;overflow:hidden;background:rgba(4,3,1,.96);border-top:1px solid var(--hair-2);padding:0 14px;font-size:11px;color:var(--ivory-dim);transition:max-height .25s,padding .25s;z-index:5}
+.thist.open{max-height:180px;padding:8px 14px}
+.thist div{padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thist div::before{content:"› ";color:var(--amber)}
+#boot{position:fixed;inset:0;z-index:50;background:#050403;display:flex;align-items:center;justify-content:center;transition:opacity .6s;color:var(--ivory)}
+#boot.done{opacity:0;pointer-events:none}
+.boot-in{width:min(420px,86vw);text-align:center}
+.boot-mark{width:14px;height:14px;border:1px solid var(--amber);transform:rotate(45deg);margin:0 auto 22px;box-shadow:0 0 18px rgba(255,157,24,.5);animation:pulse 1.4s ease-in-out infinite}
+#boot h1{font-family:var(--disp);font-weight:500;font-size:22px;letter-spacing:.42em;margin-left:.42em}
+.boot-sub{font-family:var(--disp);font-size:11px;letter-spacing:.3em;color:var(--ivory-dim);margin:8px 0 26px}
+#bootlog{list-style:none;text-align:left;font-size:11px;color:var(--ivory-dim);min-height:96px}
+#bootlog li{padding:2px 0;opacity:0;animation:fadein .3s forwards}
+#bootlog li::before{content:"› ";color:var(--amber)}
+#bootlog li.ok::after{content:"  ok";color:var(--amber-2)}
+@keyframes fadein{to{opacity:1}}
+.boot-bar{height:1px;background:var(--hair-2);margin-top:14px}
+.boot-bar i{display:block;height:100%;width:0;background:var(--amber);box-shadow:0 0 8px var(--amber);transition:width .4s}
+#wigner{top:392px;width:290px}
+#wigner #wcan{aspect-ratio:1.5}
+.panel .ph .wtabs button{width:auto;height:auto;line-height:1.3;padding:2px 8px}
+.mlog{max-height:70px}
+.mlog li{padding:2px 0}
+@media (max-width:1180px){ .strip{display:none} #wigner{top:392px;width:240px} }
+@media (max-width:820px){ .strip,.bk{display:none} .mlog{max-height:60px} #observe{font-size:20px} }
 </style>
 </head>
 <body>
@@ -296,6 +372,8 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
   <section id="chamber" aria-label="Interactive quantum observation chamber">
     <canvas id="gl"></canvas>
     <div class="vignette"></div>
+    <i class="bk tl"></i><i class="bk tr"></i><i class="bk bl"></i><i class="bk br"></i>
+    <div class="strip" id="strip"><span>CHAMBER 01</span><span>|ψ⟩ = cat(α <b id="s-a">3.20</b>, N <b id="s-n">6</b>)</span><span>r <b id="s-r">0.75</b></span><span>φ <b id="s-p">0.785</b></span><span>κ <b id="s-k">0.020</b></span><span>DPR <b id="s-dpr">1.5</b></span><span>BLOOM <b id="s-bloom">ON</b></span></div>
     <div id="fallback"><div><img src="assets/quantum-cat.png" alt=""><p>WebGL is unavailable in this browser, so the chamber cannot render.<br>The physics panels below still work.</p></div></div>
     <div class="coord tl">X: −3.0</div><div class="coord tr">X: 3.0</div><div class="coord ml">Y: 2.0</div><div class="coord mr">Y: 2.0</div><div class="coord bl">Z: −2.0</div>
     <div class="crosshair"></div>
@@ -323,7 +401,11 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
           <dt>Purity</dt><dd id="t-pur">0.984</dd>
           <dt>Fidelity</dt><dd id="t-fid">0.997</dd>
         </dl>
+        <div class="meter"><span>purity</span><i id="m-pur"></i></div>
+        <div class="log-h">Measurement log <em id="mlog-n">0</em></div>
+        <ul id="mlog" class="mlog"><li class="empty">no observations yet</li></ul>
         <div class="more" id="more">
+          <div class="spark"><canvas id="sp-neg" width="220" height="36" aria-label="Negativity history"></canvas><span>negativity · last 60 samples</span></div>
           <dl class="tele">
             <dt>⟨n⟩ photons</dt><dd id="t-n">10.24</dd>
             <dt>Parity ⟨Π⟩</dt><dd id="t-par">+1.000</dd>
@@ -339,7 +421,7 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
     </aside>
 
     <aside class="panel" id="wigner">
-      <div class="ph"><span>Wigner W(<i>x</i>,<i>p</i>)</span><button data-collapse aria-label="Collapse Wigner plot">−</button></div>
+      <div class="ph"><span class="wtabs" id="wtabs"><button class="on" data-w="w">W(x,p)</button><button data-w="px">P(x)</button><button data-w="pp">P(p)</button></span><button data-collapse aria-label="Collapse Wigner plot">−</button></div>
       <div class="pb wig">
         <div class="wig-scene"><div class="wig-tilt"><canvas id="wcan" width="256" height="200" aria-label="Wigner phase-space distribution"></canvas></div></div>
         <span class="ax p">p</span><span class="ax x">x</span>
@@ -350,7 +432,7 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
 
     <div class="tabs" id="tabs"><button data-tab="controls">Controls</button><button data-tab="telemetry">Telemetry</button><button data-tab="wigner">Wigner</button></div>
 
-    <button id="observe" aria-label="Observe and collapse the quantum state"><span class="led"></span><span id="obsLabel">Observe</span></button>
+    <button id="observe" aria-label="Observe and collapse the quantum state"><span class="led"></span><span id="obsLabel">Observe</span><i class="ring"></i></button>
     <div class="hint">Space: play/pause · O: observe · Esc: reset · Drag: orbit</div>
     <div class="result" id="result" aria-live="polite"><b id="r-title">Alive</b><small id="r-sub">branch 3 of 6 · x = +2.14</small><span class="k" id="r-k"></span></div>
   </section>
@@ -366,12 +448,15 @@ input[type=range]::-moz-range-thumb{width:2px;height:12px;background:var(--amber
   </div>
 
   <div class="term">
+    <div class="thist" id="thist"></div>
     <span class="tag">TERMINAL</span>
     <div class="line"><span>&gt;</span><input id="cmd" placeholder="wigner(1.2, 0)   ·   type help" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command terminal"></div>
     <div class="out" id="out">ready — state |ψ⟩ prepared. every number on this page is computed from it.</div>
     <div class="sys"><span>System status</span><b id="sys">COHERENT</b><span class="dot"></span></div>
   </div>
 </div>
+
+<div id="boot" aria-hidden="true"><div class="boot-in"><div class="boot-mark"></div><h1>SCHRÖDINGER'S BOX</h1><p class="boot-sub">QUANTUM OBSERVATION CHAMBER · OXFORD PRX 2026</p><ol id="bootlog"></ol><div class="boot-bar"><i id="bootfill"></i></div></div></div>
 
 <div class="overlay" id="about">
   <div class="sheet">
@@ -542,9 +627,21 @@ function drawWigner(){
     ctx.fillStyle='rgba(242,230,201,.6)'; ctx.font='10px IBM Plex Mono, monospace';
     const lab=wRange.toFixed(0); ctx.fillText('−'+lab,3,h-3); ctx.fillText('+'+lab,w-22,h-3);
   };
-  paint(wctx,wcan.width,wcan.height,8);
+  if(wMode==='w') paint(wctx,wcan.width,wcan.height,8); else paintMarginal(wctx,wcan.width,wcan.height,wMode);
   if($('wigbig').classList.contains('open')) paint(bctx,wbig.width,wbig.height,12);
 }
+let wMode='w';
+function paintMarginal(ctx,w,h,mode){
+  const dx=(2*wRange)/(G-1); const P=new Float64Array(G); let mx=1e-9;
+  for(let i=0;i<G;i++){ let s2=0; for(let j=0;j<G;j++) s2+=(mode==='px'? W[j*G+i] : W[i*G+j]); P[i]=Math.max(0,s2*dx); if(P[i]>mx) mx=P[i]; }
+  ctx.clearRect(0,0,w,h); ctx.fillStyle='#030201'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,157,24,.14)'; for(let i=1;i<8;i++){ const x=Math.round(i*w/8)+.5; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  ctx.beginPath(); for(let i=0;i<G;i++){ const idx=mode==='px'?i:(G-1-i); const px=i/(G-1)*w, py=h-4-(P[idx]/mx)*(h-14); i?ctx.lineTo(px,py):ctx.moveTo(px,py); }
+  ctx.strokeStyle='rgba(255,213,138,.95)'; ctx.lineWidth=1.4; ctx.stroke();
+  const lg=ctx.createLinearGradient(0,0,0,h); lg.addColorStop(0,'rgba(255,157,24,.45)'); lg.addColorStop(1,'rgba(255,157,24,0)'); ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath(); ctx.fillStyle=lg; ctx.fill();
+  ctx.fillStyle='rgba(242,230,201,.6)'; ctx.font='10px IBM Plex Mono, monospace'; ctx.fillText((mode==='px'?'P(x) = ∫W dp':'P(p) = ∫W dx'),6,12); ctx.fillText('−'+wRange.toFixed(0),3,h-3); ctx.fillText('+'+wRange.toFixed(0),w-22,h-3);
+}
+$('wtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; wMode=b.dataset.w; [...$('wtabs').children].forEach(x=>x.classList.toggle('on',x===b)); drawWigner(); });
 function updateTelemetry(){
   $('t-neg').textContent=(M.neg<0?'−':'')+Math.abs(M.neg).toFixed(3);
   $('t-pur').textContent=M.pur.toFixed(3);
@@ -557,8 +654,9 @@ function updateTelemetry(){
   let mx=1e-9; for(let i=0;i<32;i++) mx=Math.max(mx,M.Pn[i]);
   for(let i=0;i<32;i++) f.children[i].style.height=Math.max(1,Math.round(44*M.Pn[i]/mx))+'px';
 }
-let wDirty=true;
-function refreshPhysics(){ computeWigner(); drawWigner(); updateTelemetry(); wDirty=false; }
+let wDirty=true; const HIST={neg:[],pur:[]};
+function drawSpark(){ const c=$('sp-neg'); if(!c) return; const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const a=HIST.neg; if(a.length<2) return; const mx=Math.max(1e-6,...a.map(Math.abs)); x.strokeStyle='rgba(255,157,24,.25)'; x.beginPath(); x.moveTo(0,h-1); x.lineTo(w,h-1); x.stroke(); x.beginPath(); a.forEach((v,i)=>{ const px=i/(a.length-1)*w, py=h-2-(Math.abs(v)/mx)*(h-6); i?x.lineTo(px,py):x.moveTo(px,py); }); x.strokeStyle='rgba(255,181,71,.9)'; x.lineWidth=1.2; x.stroke(); const lg=x.createLinearGradient(0,0,0,h); lg.addColorStop(0,'rgba(255,157,24,.28)'); lg.addColorStop(1,'rgba(255,157,24,0)'); x.lineTo(w,h); x.lineTo(0,h); x.closePath(); x.fillStyle=lg; x.fill(); }
+function refreshPhysics(){ computeWigner(); drawWigner(); updateTelemetry(); HIST.neg.push(M.neg); HIST.pur.push(M.pur); if(HIST.neg.length>60){HIST.neg.shift();HIST.pur.shift();} drawSpark(); const m=$('m-pur'); if(m) m.style.setProperty('--w',(M.pur*100).toFixed(1)+'%'); wDirty=false; }
 
 /* ======================================================================
    3. Three.js chamber
@@ -879,7 +977,7 @@ chamber.addEventListener('pointerup',()=>S.drag=null); chamber.addEventListener(
 chamber.addEventListener('pointerleave',()=>{ if(!S.drag){ S.pointer.x=0; S.pointer.y=0; } });
 chamber.addEventListener('wheel',e=>{ if(e.target.closest('.panel')) return; e.preventDefault(); S.zoom=Math.max(.7,Math.min(1.5,S.zoom+Math.sign(e.deltaY)*.05)); },{passive:false});
 // keyboard
-addEventListener('keydown',e=>{ if(e.target instanceof HTMLInputElement) return; if(e.code==='Space'){ e.preventDefault(); togglePlay(); } else if(e.key==='o'||e.key==='O') observe(); else if(e.key==='Escape'){ if($('about').classList.contains('open')||$('wigbig').classList.contains('open')){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); } else unobserve(true); } });
+addEventListener('keydown',e=>{ if(e.target instanceof HTMLInputElement) return; if(e.code==='Space'){ e.preventDefault(); togglePlay(); } else if(e.key==='o'||e.key==='O') armObserve(); else if(e.key==='Escape'){ if($('about').classList.contains('open')||$('wigbig').classList.contains('open')){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open')); } else unobserve(true); } });
 
 // Observe
 const BRANCH_TXT=[['Alive','the branch with the cat still breathing'],['Dead','the branch where she is not'],['Alive','a third branch — a superposition of superpositions'],['Dead','trisqueezed: the fringes here are 3-fold'],['Alive','quadsqueezed: fourfold symmetry, still negative'],['Dead','the sixth lobe — Wigner negativity confirmed']];
@@ -891,6 +989,7 @@ function observe(){
   if(catMat) catMat.uniforms.uKeep.value=k;
   $('observe').classList.add('done'); $('obsLabel').textContent='Observed'; $('coh').textContent='OBSERVED'; $('sys').textContent='COLLAPSED'; chamber.classList.add('is-observed');
   const [title,k2]=BRANCH_TXT[k%6];
+  logMeasurement(k,x,title);
   $('r-title').textContent=title; $('r-sub').textContent=`branch ${k+1} of ${S.N} · x = ${x>=0?'+':'−'}${Math.abs(x).toFixed(2)} · sample from P(x)=∫W dp`; $('r-k').textContent=k2;
   clearTimeout(obsTimer); obsTimer=setTimeout(()=>$('result').classList.add('show'),650);
   const cnt=S.obsHist.reduce((a,b)=>{a[b]=(a[b]||0)+1;return a;},{});
@@ -899,11 +998,15 @@ function observe(){
   $('t-neg').textContent='−0.000'; $('t-pur').textContent='1.000'; $('t-fid').textContent=(1/S.N).toFixed(3);
 }
 function unobserve(){ if(!S.observed) return; S.observed=false; chamber.classList.remove('is-observed'); $('observe').classList.remove('done'); $('obsLabel').textContent='Observe'; $('coh').textContent='COHERENT'; $('sys').textContent='COHERENT'; $('result').classList.remove('show'); wDirty=true; }
-$('observe').addEventListener('click',observe);
+let arming=false;
+function armObserve(){ if(arming||S.observed) return; arming=true; const b=$('observe'); b.classList.add('arming'); $('obsLabel').textContent='Arming'; log('measure(x) — arming detector …'); setTimeout(()=>{ b.classList.remove('arming'); arming=false; observe(); },450); }
+$('observe').addEventListener('click',armObserve);
+function logMeasurement(k,x,title){ const ul=$('mlog'); const e=ul.querySelector('.empty'); if(e) e.remove(); const li=document.createElement('li'); li.innerHTML=`<b>${String(S.obsHist.length).padStart(2,'0')}</b><i>${title}</i><span>b${k+1}/${S.N} · x ${x>=0?'+':'−'}${Math.abs(x).toFixed(2)}</span>`; ul.prepend(li); while(ul.children.length>4) ul.lastChild.remove(); $('mlog-n').textContent=S.obsHist.length; }
 
 // Terminal
 const out=$('out'), cmd=$('cmd');
-function log(s){ out.textContent=s; out.title=s; }
+const THIST=[]; function log(s){ out.textContent=s; out.title=s; THIST.push(s); if(THIST.length>8) THIST.shift(); const h=$('thist'); if(h) h.innerHTML=THIST.map(l=>`<div>${l.replace(/</g,'&lt;')}</div>`).join(''); }
+cmd.addEventListener('focus',()=>$('thist').classList.add('open')); cmd.addEventListener('blur',()=>setTimeout(()=>$('thist').classList.remove('open'),150));
 const API={
   help:()=>'help · psi() · wigner(x,p) · alpha(v) · squeeze(v) · phase(v) · components(2|3|6) · kappa(v) · metrics() · observe() · reset() · hist() · pause() · play() · speed(v)',
   psi:()=>{ const al=alphas(S.N,S.sep,S.ph); return `|ψ⟩ = N·S(${S.sq.toFixed(2)})·[ ${al.map(([r,i])=>`|${r.toFixed(2)}${i>=0?'+':'−'}${Math.abs(i).toFixed(2)}i⟩`).join(' + ')} ]  κ=${S.ka}`; },
@@ -914,7 +1017,7 @@ const API={
   components:v=>{ v=+v; if(![2,3,6].includes(v)) return 'components must be 2, 3 or 6'; setVal('N',v); syncControls(); return `N = ${v}`; },
   kappa:v=>{ setVal('ka',Math.max(0,Math.min(1,+v))); syncControls(); return `κ = ${S.ka}`; },
   metrics:()=>{ if(wDirty) refreshPhysics(); return `negativity ${M.neg.toFixed(4)} · purity ${M.pur.toFixed(4)} · fidelity ${M.fid.toFixed(4)} · ⟨n⟩ ${M.n.toFixed(2)} · parity ${M.par.toFixed(3)} · Wmin ${M.wmin.toFixed(3)}`; },
-  observe:()=>{ observe(); return out.textContent; },
+  observe:()=>{ armObserve(); return 'arming …'; },
   reset:()=>{ unobserve(); return 'state re-prepared'; },
   hist:()=>{ if(!S.obsHist.length) return 'no observations yet'; const c={}; S.obsHist.forEach(k=>c[k]=(c[k]||0)+1); return Object.entries(c).sort().map(([k,v])=>`branch ${+k+1}: ${'█'.repeat(Math.max(1,Math.round(v/S.obsHist.length*20)))} ${v}`).join('   '); },
   pause:()=>{ if(S.running) togglePlay(); return 'paused'; }, play:()=>{ if(!S.running) togglePlay(); return 'running'; },
@@ -934,7 +1037,7 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000); last=now;
   const hidden=document.hidden; if(hidden) return;
   // fps meter + adaptive quality
-  fpsAcc+=dt; fpsN++; if(fpsAcc>=.5){ const f=fpsN/fpsAcc; fpsShown=Math.round(f); $('fps').textContent=fpsShown; fpsAcc=0; fpsN=0; if(f<38&&S.quality>0.6){ lowStreak++; if(lowStreak>=3){ S.quality-=.15; resize(); lowStreak=0; } } else lowStreak=0; }
+  fpsAcc+=dt; fpsN++; if(fpsAcc>=.5){ const f=fpsN/fpsAcc; fpsShown=Math.round(f); $('fps').textContent=fpsShown; if($('strip')){ $('s-a').textContent=S.sep.toFixed(2); $('s-n').textContent=S.N; $('s-r').textContent=S.sq.toFixed(2); $('s-p').textContent=S.ph.toFixed(3); $('s-k').textContent=S.ka.toFixed(3); $('s-dpr').textContent=(renderer?renderer.getPixelRatio():1).toFixed(2); $('s-bloom').textContent=(bloomPass&&bloomPass.enabled)?'ON':'OFF'; } fpsAcc=0; fpsN=0; if(f<38&&S.quality>0.6){ lowStreak++; if(lowStreak>=3){ S.quality-=.15; resize(); lowStreak=0; } } else lowStreak=0; }
   if(S.running&&!reduced){ S.t+=dt*S.speed; S.tau+=dt*S.speed; }
   // clock UI
   const mm=String(Math.floor(S.t/60)%60).padStart(2,'0'), ss=(S.t%60).toFixed(3).padStart(6,'0'); $('tcode').textContent=`t = ${mm}:${ss}`;
@@ -970,11 +1073,17 @@ function frame(now){
 /* ======================================================================
    6. Boot
    ====================================================================== */
+const bootT0=performance.now();
+function bootStep(msg,pct,ok){ const ol=$('bootlog'); if(!ol) return; if(ok){ const last=ol.lastElementChild; if(last) last.classList.add('ok'); } if(msg){ const li=document.createElement('li'); li.textContent=msg; ol.appendChild(li); } if(pct!=null) $('bootfill').style.width=pct+'%'; }
+async function bootDone(){ bootStep(null,100,true); bootStep('chamber ready',100); const wait=Math.max(0,2200-(performance.now()-bootT0)); await new Promise(r=>setTimeout(r,wait+350)); $('boot').classList.add('done'); setTimeout(()=>$('boot').remove(),700); }
 (async()=>{
+  bootStep('initialising observation chamber',8);
   refreshPhysics();
-  if(initGL()){ $('coh').textContent='LOADING'; log('loading models/schrodinger-cat.glb …'); try{ await buildCatGLB(); log('model ready — 9 parts, hologram + surface particles. type help'); }catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud', e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } } $('coh').textContent=S.observed?'OBSERVED':'COHERENT'; }
+  bootStep('preparing |ψ⟩ = cat(α='+S.sep+', N='+S.N+') · W(x,p) '+G+'×'+G,30,true);
+  if(initGL()){ bootStep('webgl context · post chain · bloom',48,true); $('coh').textContent='LOADING'; log('loading models/schrodinger-cat.glb …'); bootStep('loading models/schrodinger-cat.glb',62,true); try{ await buildCatGLB(); bootStep('sampling surface · hologram layers · reflections',88,true); log('model ready — 9 parts, hologram + surface particles. type help'); }catch(e){ console.warn('[cat] GLB failed, falling back to PNG point cloud', e); try{ await buildCatPNG(); }catch(e2){ console.error(e2); } } $('coh').textContent=S.observed?'OBSERVED':'COHERENT'; }
   document.addEventListener('visibilitychange',()=>{ last=performance.now(); });
   requestAnimationFrame(frame);
+  bootDone();
 })();
 </script>
 </body>
