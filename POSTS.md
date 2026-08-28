@@ -44,3 +44,16 @@ Post in order — reference, thesis, product — roughly one a day.
 
 `270/280` · Image: `assets/social/posts/p02-lab.jpg`
 *The instrument: hologram cat in the chamber, live telemetry, Wigner panel, OBSERVE.*
+
+---
+
+## 04 — The entropy excess
+
+> Lieb, 1978: nothing spreads less over phase space than a coherent state. A floor no state can beat.
+>
+> Our cat's excess above it: ln 2 = 0.6931. ln 3 = 1.0983. Exactly ln N — the state counts its own components.
+>
+> At N=8 the lobes overlap and it falls 0.35 short. We show that too.
+
+`278/280` · Image: `assets/social/posts/p04-wehrl.jpg`
+*Study S-02 live: ΔS vs ln N table, deviations included; coherent reference matches 1 + ln π.*
