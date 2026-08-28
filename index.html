@@ -74,6 +74,12 @@ h1{font-family:var(--head);font-weight:800;font-size:clamp(40px,4.9vw,78px);line
 .cta-row{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap}
 .hero-note{margin-top:24px;font-size:11px;letter-spacing:.06em;color:rgba(242,230,201,.34)}
 .hero-note b{color:var(--ivory-dim);font-weight:400}
+.ca{display:flex;align-items:center;gap:12px;margin-top:26px;padding:10px 14px;border:1px solid var(--hair-2);border-radius:3px;background:rgba(8,6,3,.55);max-width:100%;text-align:left}
+.ca:hover{border-color:var(--hair)}
+.ca .tag{font-family:var(--disp);font-size:10px;letter-spacing:.26em;color:var(--ivory-dim);flex:none}
+.ca code{font-family:var(--mono);font-size:12px;color:var(--amber-2);word-break:break-all;line-height:1.5;min-width:0}
+.ca .cp{font-family:var(--disp);font-size:10px;letter-spacing:.22em;color:var(--ivory-dim);flex:none;border-left:1px solid var(--hair-2);padding-left:12px}
+.ca:hover .cp{color:var(--amber-hi)}
 .hero-box{position:relative;height:min(66vh,660px);min-height:360px}
 #chamber{position:absolute;inset:0;border-radius:4px;overflow:hidden;background:radial-gradient(120% 90% at 50% 45%,#0c0803 0%,#050403 55%,#030202 100%);touch-action:pan-y;cursor:grab}
 #chamber:active{cursor:grabbing}
@@ -328,6 +334,7 @@ blockquote cite{margin-top:11px;font-size:11px}
         <a class="btn solid" href="lab.html">Enter the chamber <span aria-hidden="true">→</span></a>
         <a class="btn" href="#experiment">See the physics</a>
       </div>
+      <button class="ca" id="ca" title="Copy contract address" aria-label="Copy contract address"><span class="tag">CA</span><code>2p39btwzkc4AfCFqjNNwfBby5abvreaeBsZakjtKpump</code><span class="cp" id="ca-cp">COPY</span></button>
     </div>
 
     <div class="hero-box">
@@ -506,6 +513,14 @@ import { initGL, resize, buildCatGLB, buildCatPNG, updateScene, attachPointer, g
 const $ = id=>document.getElementById(id);
 const chamber=$('chamber'), glc=$('gl');
 S.orbitAuto=true; S.zoom=1; S.grain=0.038; S.bloom=0.42;
+
+/* ---------- contract address ---------- */
+$('ca').addEventListener('click',async()=>{
+  const t=document.querySelector('#ca code').textContent;
+  try{ await navigator.clipboard.writeText(t); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents(document.querySelector('#ca code')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); document.execCommand('copy'); sel.removeAllRanges(); }
+  const cp=$('ca-cp'); cp.textContent='COPIED'; setTimeout(()=>cp.textContent='COPY',1600);
+});
 
 /* ---------- reveals ---------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.12});
