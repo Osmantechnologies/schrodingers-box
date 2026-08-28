@@ -4,3 +4,20 @@ _handoff/
 Thumbs.db
 netlify-deploy/
 netlify-deploy.zip
+
+# --- secrets: never commit (added 2026-08-19 security audit) ---
+.env
+.env.*
+!.env.example
+*.env
+.cf-deploy.env
+key.txt
+x-keys.txt
+*keypair*.json
+payer-*.json
+id.json
+*.pem
+*.key
+*.p12
+*.pfx
+.gstack/

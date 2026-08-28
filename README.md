@@ -4,9 +4,9 @@
 
 An interactive quantum observation chamber. A cat state lives inside a WebGL box; every number on the page — the Wigner function, negativity, purity, fidelity, photon statistics, and the result you get when you press **OBSERVE** — is computed from the actual state vector. Nothing is typed in.
 
-**Live:** https://steveindustries90.github.io/schrodingers-box/ — landing page
-**The instrument:** https://steveindustries90.github.io/schrodingers-box/lab.html
-**Study log:** https://steveindustries90.github.io/schrodingers-box/studies.html
+**Live:** https://osmantechnologies.github.io/schrodingers-box/ — landing page
+**The instrument:** https://osmantechnologies.github.io/schrodingers-box/lab.html
+**Study log:** https://osmantechnologies.github.io/schrodingers-box/studies.html
 
 ![Schrödinger's Box](assets/reference-mockup.png)
 
