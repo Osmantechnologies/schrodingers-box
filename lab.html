@@ -442,7 +442,7 @@ input[type=range]::-moz-range-thumb{width:5px;height:14px;border:0;border-radius
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 <script type="module">
 import { S, INITIAL, M, W, G, wRange, wMin, wMax, isMobile, reduced, computeWigner, wAt, sampleX, nearestBranch, alphas } from './js/physics.js';
-import { initGL, resize, buildCatGLB, buildCatPNG, updateScene, attachPointer, gl } from './js/chamber.js';
+import { initGL, resize, buildCatGLB, buildCatPNG, updateScene, attachPointer, setKeep, gl } from './js/chamber.js';
 const $ = id=>document.getElementById(id);
 const chamber=$('chamber'), glc=$('gl');
 
@@ -572,7 +572,7 @@ function observe(){
   if(S.observed) return;
   const x=sampleX(); const k=nearestBranch(x);
   S.observed=true; S.keep=k; S.obsHist.push(k); if(S.obsHist.length>200) S.obsHist.shift();
-  if(catMat) catMat.uniforms.uKeep.value=k;
+  setKeep(k);
   $('observe').classList.add('done'); $('obsLabel').textContent='Observed'; $('obsSub').textContent='State collapsed · esc to reset'; $('coh').textContent='OBSERVED'; $('sys').textContent='COLLAPSED'; chamber.classList.add('is-observed');
   const [title,k2]=BRANCH_TXT[k%6];
   logMeasurement(k,x,title);

@@ -320,6 +320,9 @@ export function updateScene(T){
   if(composer) composer.render(); else renderer.render(scene,camera);
 }
 
+/* the collapsed branch the particle shader keeps; observe() in the lab sets it */
+export function setKeep(k){ if(catMat) catMat.uniforms.uKeep.value=k; }
+
 /* ---- pointer parallax, drag-orbit and wheel zoom ---- */
 export function attachPointer(el,{wheel=true,ignore='.panel,button,input,.tabs,a'}={}){
   el.addEventListener('pointermove',e=>{ const r=el.getBoundingClientRect(); const x=((e.clientX-r.left)/r.width-.5)*2, y=((e.clientY-r.top)/r.height-.5)*2;
